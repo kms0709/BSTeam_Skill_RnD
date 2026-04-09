@@ -6,10 +6,12 @@ using UnityEngine.Tilemaps;
 
 public class _TileChecker : MonoBehaviour
 {
-    private void OnCollisionStay2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.name != "Test Player")
             return;
+
+        _Player player = collision.gameObject.GetComponent<_Player>();
 
         // 타일들의 중간 값 찾기
         Vector2 hitPos = Vector3.zero;
@@ -24,27 +26,43 @@ public class _TileChecker : MonoBehaviour
         hitPos /= collision.contacts.Length;
 
         // 충돌 위치와 플레이어의 좌표를 뺀다.
-        Vector2 dir = (Vector2)collision.transform.position - hitPos;
+        Vector2 dir = hitPos - (Vector2)collision.transform.position;
         Vector2 normal = dir.normalized;
-        Debug.DrawLine(hitPos, hitPos + normal, Color.magenta, 1f);
+        Debug.DrawLine(hitPos, hitPos + normal, Color.red, 1f);
 
         // 각도 구하기
         float rad = Mathf.Atan2(normal.y, normal.x);
-        float deg = rad * Mathf.Rad2Deg + 90f;
-        Debug.Log(string.Format("부딪힌 각도 : {0}", deg));
+        float deg = rad * Mathf.Rad2Deg;
 
-        float ramp = 45f;
-        float min = 180f - ramp;
-        float max = 180f + ramp;
+        // 바닥 -90
+        // 왼쪽 -180
+        // 오른쪽 0
+        // 천장 90
 
-        if (deg < 0) deg += 90f;
-        if (min <= deg && deg <= max)
+        float margin = 10f;
+        // 바닥
+        if (deg > -90f - margin && deg < -90f + margin)
         {
-            Debug.Log(string.Format("Player State = GROUND, angle = {0}", deg));
+            player.ChangeState("Idle");
         }
-        else
+
+        // 왼쪽 벽
+        if (deg > -180f - margin && deg < -180f + margin)
         {
-            Debug.Log(string.Format("Player State = WALL OR FALL, angle = {0}", deg));
+            player.ChangeState("WallSlide");
+            player.SetJumpDirection(1);
         }
+
+        // 오른쪽 벽
+        if (deg > 0f - margin && deg < 0f + margin)
+        {
+            player.ChangeState("WallSlide");
+            player.SetJumpDirection(-1);
+        }
+
+        // 플레이어가 타일 각도 받아서 조절 해야 할 듯.
+        // + Ray 쏴서 2차 확인
+
+        Debug.Log(string.Format("angle = {0}", deg));
     }
 }

@@ -2759,9 +2759,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1784608537}
   - component: {fileID: 1784608536}
-  - component: {fileID: 1784608538}
   - component: {fileID: 1784608535}
   - component: {fileID: 1784608534}
+  - component: {fileID: 1784608538}
   m_Layer: 0
   m_Name: Test Player
   m_TagString: Untagged
@@ -2917,13 +2917,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1784608533}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44b889881007ad0469fad7e6db56faa7, type: 3}
+  m_Script: {fileID: 11500000, guid: 1c8ca1806f13300478e0876e15b177f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
-  maxSpeed: 3
+  maxSpeed: 10
   jumpForce: 5
-  state: 0
+  jumpAngle: 45
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
