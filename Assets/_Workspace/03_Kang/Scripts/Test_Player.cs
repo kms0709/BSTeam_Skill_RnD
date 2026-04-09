@@ -46,7 +46,7 @@ public class Test_Player : MonoBehaviour
         transform.Translate(moveVector, Space.World);
 
         // มกวม
-        if (Input.GetKeyDown(KeyCode.Space) && state != ACTOR_STATE.JUMP)
+        if (Input.GetKeyDown(KeyCode.Space)/* && state != ACTOR_STATE.JUMP*/)
         {
             rigidbody.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
             state = ACTOR_STATE.JUMP;

@@ -1,35 +1,50 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class _TileChecker : MonoBehaviour
 {
-    Tilemap tilemap;
-
-    private void Awake()
+    private void OnCollisionStay2D(Collision2D collision)
     {
-        tilemap = GetComponent<Tilemap>();
-    }
+        if (collision.gameObject.name != "Test Player")
+            return;
 
+        // 타일들의 중간 값 찾기
+        Vector2 hitPos = Vector3.zero;
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
+        // 부딪힌 타일들 위치 더하기
         foreach (ContactPoint2D hit in collision.contacts)
         {
-            Vector3Int cellPos = tilemap.WorldToCell(hit.point);
-            Debug.Log(string.Format("Cell Position : {0}", cellPos));
+            hitPos += hit.point;
+        }
 
-            TileBase tile = tilemap.GetTile(cellPos + Vector3Int.down);
+        // 부딪힌 곳의 중간 값
+        hitPos /= collision.contacts.Length;
 
-            if (tile != null)
-            {
-                Debug.Log("Hit Tile: " + tile.name + "at " + cellPos);
-            }
-            else
-            {
-                Debug.Log("What?");
-            }
+        // 충돌 위치와 플레이어의 좌표를 뺀다.
+        Vector2 dir = (Vector2)collision.transform.position - hitPos;
+        Vector2 normal = dir.normalized;
+        Debug.DrawLine(hitPos, hitPos + normal, Color.magenta, 1f);
+
+        // 각도 구하기
+        float rad = Mathf.Atan2(normal.y, normal.x);
+        float deg = rad * Mathf.Rad2Deg + 90f;
+        Debug.Log(string.Format("부딪힌 각도 : {0}", deg));
+
+        float ramp = 45f;
+        float min = 180f - ramp;
+        float max = 180f + ramp;
+
+        if (deg < 0) deg += 90f;
+        if (min <= deg && deg <= max)
+        {
+            Debug.Log(string.Format("Player State = GROUND, angle = {0}", deg));
+        }
+        else
+        {
+            Debug.Log(string.Format("Player State = WALL OR FALL, angle = {0}", deg));
         }
     }
 }
