@@ -11,6 +11,7 @@ public class GroundState : IState
     }
     public void Enter(){
         Debug.Log("OnGround");
+        player.SetGravity(0);
         //벽점프 boolean 조정
         player.isWallJumping = false;
         //대쉬 boolean 조정

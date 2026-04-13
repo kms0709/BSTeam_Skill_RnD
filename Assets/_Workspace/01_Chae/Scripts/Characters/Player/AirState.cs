@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Callbacks;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class AirState : IState
 {
@@ -11,6 +13,7 @@ public class AirState : IState
     }
     public void Enter(){
         Debug.Log("OnAir");
+        player.SetGravity(1);
     }
     public void Update(){
         player.Move();
