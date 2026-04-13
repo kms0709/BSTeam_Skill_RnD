@@ -9,15 +9,19 @@ using UnityEngine.UIElements;
 public class Player : CharacterParent
 {   
     //Value vars
+    [SerializeField] private float gravityModifier = 1f;
+    public float gravity = 5f;
+    public float maxFallSpeed = 20f;
     public float jumpForce;
     //wallJump Vars
     [Header("=== Wall Jump Vars ===")]
+    public float wallAttachTime;
     public float wallJumpDelayTime;
+
     //public float wallJumpCoolTime;
     [HideInInspector] public bool isWallJumping;
     //public bool canWallJump;
     public float slideSpeed;
-    private float wallDir;
     
     [Header("=== Dash Vars ===")]
     public float dashForce;
@@ -28,8 +32,6 @@ public class Player : CharacterParent
 
     //Get componet Vars
     [HideInInspector] public Rigidbody2D rb;
-
-
 
     [Header("=== States ===")]
     public Vector2 dir;
@@ -58,6 +60,9 @@ public class Player : CharacterParent
     //Main
     private void Awake(){
         rb = GetComponent<Rigidbody2D>();
+    }
+    private void Start(){
+        rb.gravityScale = 0;
     }
     void Update(){
         MyInput();
@@ -118,14 +123,36 @@ public class Player : CharacterParent
     //Physics Funcs
     public override void Move(){
         if(!isWallJumping && !isDashing)
-            rb.velocity = new Vector2(dir.x * moveSpeed,rb.velocity.y);  
+            rb.velocity = new Vector2(dir.x * moveSpeed,rb.velocity.y);
+            ApplyGravity();
+    }
+    public void SetDefault(){
+        // rb.gravityScale = gravity;
+    }
+    public void ApplyGravity(){
+        if(gravityModifier == 0) return;
+        float newVelocity = rb.velocity.y - (gravity * gravityModifier * Time.fixedDeltaTime);
+        newVelocity = Mathf.Max(newVelocity,-maxFallSpeed);
+        rb.velocity = new Vector2(rb.velocity.x,newVelocity);
+    }
+    public void SetGravity(float modi){
+        gravityModifier = modi;
     }
     //--01_Wall Jump Funcs
     public void SlideWall(){
+        SetGravity(0);
         //삼항연산자 -> 현재 방향(입력 방향)과 벽방향이 일치? T : velocity.x 의 값을 0으로 만듬 / F : 그대로 움직임
         // T -> X가 0이아니면 벽에 달라붙어서 안움직여서,velocity.y -= slideSpped 가 동작이안됌;
-        // F -> 그대로 움직입니다 : 벽에서 탈출; 
-        rb.velocity = new Vector2((wallDir == Mathf.Sign(dir.x)? 0 : rb.velocity.x),-slideSpeed);
+        // F -> 그대로 움직입니다 : 벽에서 탈출;
+        float velX = IsOnWall()? 0 : rb.velocity.x; 
+        float smooth = Mathf.Lerp(rb.velocity.y, -slideSpeed,Time.deltaTime);
+        rb.velocity = new Vector2(velX,smooth);
+    }
+
+    public void AttatchWall(){
+        SetGravity(0);
+        float velX = IsOnWall()? 0 : rb.velocity.x;
+        rb.velocity = new Vector2(velX,0);
     }
     public void JumpWall(){
         rb.velocity = new Vector2(-Mathf.Sign(dir.x) * moveSpeed * .9f, jumpForce);
@@ -158,10 +185,12 @@ public class Player : CharacterParent
     //boolean Funcs
     public bool IsGrounded(){ // 지면확인
         RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistance,groundLayer);
+        Debug.DrawRay(transform.position, Vector2.down * hit.distance, Color.red);
         return hit.collider != null;
     }
     public bool IsOnWall(){ // 벽 확인
-        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.right * dir.x ,rayDistance,wallLayer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.right * Mathf.Sign(dir.x) ,rayDistance,wallLayer);
+        Debug.DrawRay(transform.position, Vector2.right * dir.x * hit.distance, Color.blue);
         return hit.collider != null;
     }
     protected override void Attack(){
