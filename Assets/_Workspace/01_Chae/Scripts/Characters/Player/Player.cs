@@ -14,16 +14,22 @@ public class Player : CharacterParent
     public float maxFallSpeed = 20f;
     public float jumpForce;
     //wallJump Vars
-    [Header("=== Wall Jump Vars ===")]
+    [Header("=== Wall Jump Logic ===")]
+    
+    [Header("-01_Force Value")]
+    public float slideSpeed;
+
+    [Header("-02_Times")]
     public float wallAttachTime;
     public float wallJumpDelayTime;
 
-    //public float wallJumpCoolTime;
-    [HideInInspector] public bool isWallJumping;
-    //public bool canWallJump;
-    public float slideSpeed;
+    [HideInInspector] public bool canWallJump;
+    [HideInInspector] public GameObject lastWall;
     
-    [Header("=== Dash Vars ===")]
+    //boolean
+    [HideInInspector] public bool isWallJumping;
+    
+    [Header("=== Dash Logic ===")]
     public float dashForce;
     public float dashDelayTime;
     [HideInInspector] public bool canDash;
@@ -49,13 +55,15 @@ public class Player : CharacterParent
     //Layers Vars <- Inspector 에서 받음
     public LayerMask groundLayer;
     public LayerMask wallLayer;
-    public float rayDistance = 1.0f;
+    public float rayDistanceGround = 1.0f;
+    public float rayDistanceWall = 1.0f;
 
 
-    [Header("=== key Binding ===")]
+    [Header("=== Inputs ===")]
     //Key binding
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode dashKey = KeyCode.LeftShift;
+    public float inputX;
 
     //Main
     private void Awake(){
@@ -76,7 +84,7 @@ public class Player : CharacterParent
         currentState = newState;
         currentState.Enter();
     }
-
+    //V
     void UpdateState(){
         PlayerStateType newState;
         //상태구별 후 새상태 부여
@@ -105,8 +113,9 @@ public class Player : CharacterParent
     }
 
     //Input Funcs
+    //VI
     void MyInput(){
-        dir.x = Input.GetAxis("Horizontal");
+        inputX = Input.GetAxis("Horizontal");
         if(IsDashed() && canDash){
             Debug.Log("Dash!");
             Dash();
@@ -121,10 +130,15 @@ public class Player : CharacterParent
     }
 
     //Physics Funcs
+    //@V_M
     public override void Move(){
+        dir.x = Mathf.Sign(inputX);
         if(!isWallJumping && !isDashing)
-            rb.velocity = new Vector2(dir.x * moveSpeed,rb.velocity.y);
+            rb.velocity = new Vector2(inputX * moveSpeed,rb.velocity.y);
             ApplyGravity();
+    }
+    public void Jump(){
+        rb.velocity = new Vector2(rb.velocity.x,jumpForce);
     }
     public void SetDefault(){
         // rb.gravityScale = gravity;
@@ -139,24 +153,48 @@ public class Player : CharacterParent
         gravityModifier = modi;
     }
     //--01_Wall Jump Funcs
+    //@V_W
     public void SlideWall(){
         SetGravity(0);
-        //삼항연산자 -> 현재 방향(입력 방향)과 벽방향이 일치? T : velocity.x 의 값을 0으로 만듬 / F : 그대로 움직임
-        // T -> X가 0이아니면 벽에 달라붙어서 안움직여서,velocity.y -= slideSpped 가 동작이안됌;
-        // F -> 그대로 움직입니다 : 벽에서 탈출;
-        float velX = IsOnWall()? 0 : rb.velocity.x; 
+
+        //벽에 달라붙어있다면 -> Vel.x를 0 으로설정 아니면 벽에서 빠져나옴;
+        // float velX = IsOnWall()? 0 : rb.velocity.x;
         float smooth = Mathf.Lerp(rb.velocity.y, -slideSpeed,Time.deltaTime);
-        rb.velocity = new Vector2(velX,smooth);
+        rb.velocity = new Vector2(0,smooth);
     }
 
     public void AttatchWall(){
         SetGravity(0);
-        float velX = IsOnWall()? 0 : rb.velocity.x;
-        rb.velocity = new Vector2(velX,0);
+        // float velX = IsOnWall()? 0 : rb.velocity.x;
+        rb.velocity = new Vector2(0,0);
+    }
+    public void EscapeWall(){
+        SetGravity(1);
+
+        //물리
+        rb.velocity = new Vector2(-dir.x * moveSpeed * 0.1f, jumpForce * 0.1f);
+        isWallJumping = true;
+        
     }
     public void JumpWall(){
-        rb.velocity = new Vector2(-Mathf.Sign(dir.x) * moveSpeed * .9f, jumpForce);
+        if(!canWallJump) return;
+
+        SetGravity(1);
+
+        //현재 벽을 저장;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.right * dir.x,rayDistanceWall,wallLayer);
+        if(hit.collider != null){
+            lastWall = hit.collider.gameObject;
+        }
+        
+        //물리 적용
+        rb.velocity = new Vector2(-dir.x * moveSpeed * 0.9f, jumpForce);
+        
+        //Set boolean
         isWallJumping = true;
+
+        //Invoke 점프딜레이타임후 isWallJumping -> false
+        canWallJump = false;
         Invoke(nameof(TriggerWallJump),wallJumpDelayTime);
     }
     public void TriggerWallJump(){
@@ -184,12 +222,12 @@ public class Player : CharacterParent
     
     //boolean Funcs
     public bool IsGrounded(){ // 지면확인
-        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistance,groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistanceGround,groundLayer);
         Debug.DrawRay(transform.position, Vector2.down * hit.distance, Color.red);
         return hit.collider != null;
     }
     public bool IsOnWall(){ // 벽 확인
-        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.right * Mathf.Sign(dir.x) ,rayDistance,wallLayer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.right * dir.x ,rayDistanceWall,wallLayer);
         Debug.DrawRay(transform.position, Vector2.right * dir.x * hit.distance, Color.blue);
         return hit.collider != null;
     }

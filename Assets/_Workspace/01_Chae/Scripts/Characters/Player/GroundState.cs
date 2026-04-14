@@ -12,16 +12,19 @@ public class GroundState : IState
     public void Enter(){
         Debug.Log("OnGround");
         player.SetGravity(0);
-        //벽점프 boolean 조정
+
+        //벽점프 Var 조정
         player.isWallJumping = false;
+        player.canWallJump = true;
+
         //대쉬 boolean 조정
         player.canDash = true;
         player.isDashing = false;
     }
     public void Update(){
         player.Move();
-        if(player.IsJumped() && player.IsGrounded()){
-            player.rb.velocity = new Vector2(player.rb.velocity.x,player.jumpForce);
+        if(player.IsJumped()){
+            player.Jump();
         }
     }
     public void Exit(){
