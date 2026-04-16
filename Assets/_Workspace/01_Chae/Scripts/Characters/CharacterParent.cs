@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor.ShaderGraph;
 using UnityEngine;
 
 public abstract class CharacterParent : MonoBehaviour
@@ -12,27 +14,38 @@ public abstract class CharacterParent : MonoBehaviour
         ON_AIR,
         ON_WALL
     }
+    
     [SerializeField] protected StateTypePhysics currentPhysicsStateType;
     protected IState currentPhysicsState;
-    public Vector2 dir;
+    [SerializeField] private float _dirX = 1f;
+
+    //dirX를 -1 또는 1로만 고정하는 프로퍼티
+    public float dirX {
+        get => _dirX;
+        set{
+            if(value != 0)
+            _dirX = Mathf.Sign(value);
+        }
+    }
  
     [Header("=== Physics ===")]
-    protected float gravityModifier = 1f;
+    public float gravityModifier = 1f;
     public float gravity = 5f;
-    public float maxFallSpeed = 20f;
     //Layers Vars <- Inspector 에서 받음
-    public LayerMask groundLayer;
-    public LayerMask wallLayer;
-    public float rayDistanceGround = 1.0f;
-    public float rayDistanceWall = 1.0f;
+    public LayerMask tileMapLayer;
+    [Header("=== Colision ===")]
+    //혹시 모르니 콜라이더를 직접 조정할 수 있게 하는 변수
+    public float colWallOffSet = 1.0f;
+    public float colWallSize = 0.9f;
+
+    [Space(10f)]
+
+    public float colGroundOffSet = 1.0f;
+    public float colGroundSize = 0.9f;
+
 
     [HideInInspector] public Rigidbody2D rb;
-
-
-
-
-
-
+    [HideInInspector] public Collider2D col;
 
     [Header("=== Character Values ===")]
     [SerializeField] private int _hpMax;
@@ -53,7 +66,10 @@ public abstract class CharacterParent : MonoBehaviour
     public int atk;
     [Space(10f)]
     public float moveSpeed;
-
+    private void Awake(){
+        rb = GetComponent<Rigidbody2D>();
+        col = GetComponent<Collider2D>();
+    }
     protected virtual void Update(){
         UpdateState();
         currentPhysicsState?.Update();
@@ -94,17 +110,29 @@ public abstract class CharacterParent : MonoBehaviour
         // }
     }
     protected bool IsGrounded(){ // 지면확인
-        RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistanceGround,groundLayer);
-        Debug.DrawRay(transform.position, Vector2.down * hit.distance, Color.red);
-        return hit.collider != null;
+
+        //콜라이더 크기 체크 후 onGround OverlapCircle 생성
+        Vector2 checkPos = new Vector2(col.bounds.center.x,col.bounds.min.y - colGroundOffSet);
+
+        //반지름 설정
+        float checkRadius = col.bounds.extents.x * colGroundSize;
+
+        Collider2D hit = Physics2D.OverlapCircle(checkPos,checkRadius,tileMapLayer);
+        // RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistanceGround,tileMapLayer);
+        // Debug.DrawRay(transform.position, Vector2.down * hit.distance, Color.red);
+        return hit != null;
     }
+    //기즈모 그리기
+
     protected virtual bool IsOnWall(){
-        float angle = (dir.x > 0)? -45f : -135f;
-        Vector2 rayDir = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
-        RaycastHit2D hit = Physics2D.Raycast(transform.position,rayDir,rayDistanceWall,wallLayer);
-        Debug.DrawRay(transform.position, rayDir * rayDistanceWall, Color.blue);
-        return hit.collider != null;
+        Vector2 checkPos = new Vector2(col.bounds.center.x + (dirX * colWallOffSet), col.bounds.center.y);
+        
+        //반지름 확인; * float 값 만큼 크기조정
+        float checkRadius = col.bounds.extents.x * colWallSize;
+        Collider2D hit = Physics2D.OverlapCircle(checkPos, checkRadius, tileMapLayer);
+        return hit != null;
     }
+    
 
     public void SetGravity(float modi){
         gravityModifier = modi;
@@ -112,8 +140,24 @@ public abstract class CharacterParent : MonoBehaviour
     protected void ApplyGravity(){
         if(gravityModifier == 0) return;
         float newVelocity = rb.velocity.y - (gravity * gravityModifier * Time.deltaTime);
-        newVelocity = Mathf.Max(newVelocity,-maxFallSpeed);
+        // newVelocity = Mathf.Max(newVelocity,-maxFallSpeed);
         rb.velocity = new Vector2(rb.velocity.x,newVelocity);
+    }
+        protected virtual void OnDrawGizmos(){
+        Collider2D gizmoCol = col != null ? col : GetComponent<Collider2D>();
+        if(gizmoCol != null){
+            // Ground Gizmo
+            Vector2 checkPosGround = new Vector2(gizmoCol.bounds.center.x, gizmoCol.bounds.min.y - colGroundOffSet);
+            float checkRadiusGround = gizmoCol.bounds.extents.x * colGroundSize;
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(checkPosGround, checkRadiusGround);
+
+            // Wall Gizmo
+            Vector2 checkPosWall = new Vector2(gizmoCol.bounds.center.x + (dirX * colWallOffSet), gizmoCol.bounds.center.y);
+            float checkRadiusWall = gizmoCol.bounds.extents.x * 0.5f;
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(checkPosWall, checkRadiusWall);
+        }
     }
     public abstract void Move();
     protected abstract void Attack();

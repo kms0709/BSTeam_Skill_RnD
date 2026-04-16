@@ -22,7 +22,7 @@ public class WallState_PLAYER : IState
         Debug.Log("OnWall");
 
         //현재 벽 방향 저장
-        currentWallDir = player.dir.x;
+        currentWallDir = player.dirX;
 
         //Set Timer
         attatchTimer.Start(player.wallAttachTime);
@@ -40,22 +40,37 @@ public class WallState_PLAYER : IState
 
         //Wall Jump
         // Mathf.Sign 버그 방지 및 반대 방향 입력 확인
-        bool isPressingAway = (player.dir.x > 0 && player.inputX < 0) || (player.dir.x < 0 && player.inputX > 0);
-
-        if(player.IsJumped()){
-            if(player.lastWallDir != currentWallDir && isPressingAway){
+        bool isPressingAway = (player.dirX > 0 && player.inputX < 0) || (player.dirX < 0 && player.inputX > 0);
+        if(player.lastWallDir != currentWallDir){
+            if(player.IsJumped() && isPressingAway){
                 player.JumpWall();
-                // 2. 점프가 '성공'했을 때만 return 하여 바로 아래의 SlideWall/AttatchWall 실행을 막음
-                return; 
+                return;
+            }else{
+                if(canSlide){
+                    player.SlideWall();
+                }else{
+                    player.AttatchWall();
+                }
             }
-        }
-
-        //Attatch-Slide
-        if(canSlide){
-            player.SlideWall();
         }else{
-            player.AttatchWall();
+            player.SlideWall();
         }
+        // if(player.IsJumped()){
+        //     if(player.lastWallDir != currentWallDir && isPressingAway){
+        //         player.JumpWall();
+        //         // 2. 점프가 '성공'했을 때만 return 하여 바로 아래의 SlideWall/AttatchWall 실행을 막음
+        //         return; 
+        //     }else{
+        //         canSlide = true;
+        //     }
+        // }
+
+        // //Attatch-Slide
+        // if(canSlide){
+        //     player.SlideWall();
+        // }else{
+        //     player.AttatchWall();
+        // }
     }
     public void Exit(){
         attatchTimer.Stop();

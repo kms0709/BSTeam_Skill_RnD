@@ -42,14 +42,14 @@ public class Player : CharacterParent
     public float inputX;
 
     //Main
-    private void Awake(){
-        rb = GetComponent<Rigidbody2D>();
-    }
     private void Start(){
         rb.gravityScale = 0;
     }
     protected override void Update(){
         base.Update();
+        // MyInput();
+    }
+    protected override void FixedUpdate(){
         MyInput();
     }
     protected override void UpdateState(){
@@ -99,7 +99,7 @@ public class Player : CharacterParent
     //@V_M
     public override void Move(){
         if(inputX != 0 && !isDashing){
-            dir.x = Mathf.Sign(inputX);
+            dirX = Mathf.Sign(inputX);
         }
         if(!isWallJumping && !isDashing){
             rb.velocity = new Vector2(inputX * moveSpeed,rb.velocity.y);
@@ -139,10 +139,10 @@ public class Player : CharacterParent
         SetGravity(1);
 
         //현재 벽 방향을 저장;
-        lastWallDir = dir.x;
+        lastWallDir = dirX;
         
         //물리 적용
-        rb.velocity = new Vector2(-dir.x * moveSpeed * 0.5f, jumpForce);
+        rb.velocity = new Vector2(-dirX * moveSpeed * 0.5f, jumpForce);
         
         //Set boolean
         isWallJumping = true;
@@ -164,7 +164,7 @@ public class Player : CharacterParent
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0f;
         if(mousePos.x != 0){
-            dir.x = (mousePos.x > 0)? 1f : -1f;
+            dirX = (mousePos.x > 0)? 1f : -1f;
         }
         Vector2 dirDash = (mousePos - transform.position).normalized;
 
@@ -174,15 +174,11 @@ public class Player : CharacterParent
     } 
     void TriggerDash(){
         isDashing = false;
+        // 대시가 끝난 후 위로 계속 날아가는 관성을 제거하여 가로대시와 이동 거리를 맞춤
+        rb.velocity = new Vector2(0f, Mathf.Min(rb.velocity.y, 0f));
     }
     
-    protected override bool IsOnWall(){ // 벽 확인
-        float angle = (dir.x > 0)? -45f : -135f;
-        Vector2 rayDir = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
-        RaycastHit2D hit = Physics2D.Raycast(transform.position,rayDir,rayDistanceWall,wallLayer);
-        Debug.DrawRay(transform.position, rayDir * rayDistanceWall, Color.blue);
-        return hit.collider != null;
-    }
+
     protected override void Attack(){
         //애니메이션 함수 -> 애니메이션 내부에서 attack area 구현 후 area script에서 부모 atk를 가져와서 처리
     }
