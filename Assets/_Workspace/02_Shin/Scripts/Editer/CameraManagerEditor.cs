@@ -1,125 +1,176 @@
-//using Cinemachine;
-//using UnityEditor;
-//using UnityEngine;
+using UnityEditor;
+using UnityEngine;
+using Cinemachine;
 
-//[CustomEditor(typeof(CameraManager))]
-//public class CameraManagerEditor : Editor
-//{
-//    public override void OnInspectorGUI()
-//    {
-//        DrawDefaultInspector();
+[CustomEditor(typeof(CameraManager))]
+public class CameraManagerEditor : Editor
+{
+    private SerializedProperty cameraZones;
+    private bool[] foldouts;
 
-//        CameraManager manager = (CameraManager)target;
+    private void OnEnable()
+    {
+        cameraZones = serializedObject.FindProperty("cameraZones");
+    }
 
-//        GUILayout.Space(10);
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
 
-//        if (GUILayout.Button("카메라 구역 추가"))
-//        {
-//            AddZone(manager);
-//        }
+        if (foldouts == null || foldouts.Length != cameraZones.arraySize)
+        {
+            foldouts = new bool[cameraZones.arraySize];
+        }
 
-//        GUILayout.Space(10);
+        CameraManager manager = (CameraManager)target;
 
-//        var zones = manager.GetComponentsInChildren<CameraZone>();
+        EditorGUILayout.Space(10);
 
-//        foreach (var zone in zones)
-//        {
-//            EditorGUILayout.BeginVertical("box");
+        for (int i = 0; i < cameraZones.arraySize; i++)
+        {
+            SerializedProperty element = cameraZones.GetArrayElementAtIndex(i);
+            SerializedProperty name = element.FindPropertyRelative(nameof(CameraZoneData.zoneName));
+            SerializedProperty vcam = element.FindPropertyRelative(nameof(CameraZoneData.vcam));
+            SerializedProperty collider = element.FindPropertyRelative(nameof(CameraZoneData.collider));
 
-//            EditorGUILayout.LabelField(zone.zoneName, EditorStyles.boldLabel);
-//            zone.zoneName = EditorGUILayout.TextField(zone.zoneName);
+            string displayName = string.IsNullOrEmpty(name.stringValue) ? $"카메라 {i + 1}" : name.stringValue;
 
-//            if (zone.vcam != null)
-//            {
-//                float size = zone.vcam.m_Lens.OrthographicSize;
-//                float newSize = EditorGUILayout.FloatField("카메라 사이즈", size);
+            foldouts[i] = EditorGUILayout.Foldout(foldouts[i], displayName, true);
 
-//                if (newSize != size)
-//                {
-//                    zone.vcam.m_Lens.OrthographicSize = newSize;
-//                }
+            if (foldouts[i])
+            {
+                EditorGUILayout.BeginVertical("box");
 
-//                int order = zone.vcam.m_Priority;
-//                int newOrder = EditorGUILayout.IntField("카메라 우선순위", order);
+                // 구역 이름 설정
+                EditorGUILayout.LabelField(displayName, EditorStyles.boldLabel);
+                name.stringValue = EditorGUILayout.TextField("이름", name.stringValue);
 
-//                if (newOrder != order)
-//                {
-//                    zone.vcam.m_Priority = newOrder;
-//                    EditorUtility.SetDirty(zone.vcam);
-//                }
-//            }
+                EditorGUILayout.Space(5);
 
-//            // Polygon Transform 이동
-//            if (zone.confiner != null)
-//            {
-//                zone.confiner.transform.position =
-//                    EditorGUILayout.Vector3Field("위치", zone.confiner.transform.position);
-//            }
+                // 카메라 위치, 사이즈 설정
+                var vcamValue = vcam.objectReferenceValue as CinemachineVirtualCamera;
 
-//            // PolygonCollider2D Inspector 그대로 출력
-//            if (zone.confiner != null)
-//            {
-//                if (!Application.isPlaying)
-//                {
-//                    SerializedObject so = new SerializedObject(zone.confiner);
+                if (vcamValue == null)
+                {
+                    EditorGUILayout.LabelField("카메라 없음");
+                }
+                else
+                {
+                    // 사이즈
+                    float newSize = EditorGUILayout.FloatField("구역 크기", vcamValue.m_Lens.OrthographicSize);
 
-//                    SerializedProperty pointsProp = so.FindProperty("m_Points");
+                    if (!Mathf.Approximately(newSize, vcamValue.m_Lens.OrthographicSize))
+                    {
+                        Undo.RecordObject(vcamValue, "Change Camera Size");
+                        vcamValue.m_Lens.OrthographicSize = newSize;
+                        EditorUtility.SetDirty(vcamValue);
+                    }
 
-//                    EditorGUILayout.PropertyField(pointsProp, true);
+                    // 위치
+                    Vector3 currentPos = vcamValue.transform.position;
+                    Vector2 newPos2D = EditorGUILayout.Vector2Field("위치", currentPos);
+                    Vector3 newPos = new Vector3(newPos2D.x, newPos2D.y, currentPos.z);
 
-//                    so.ApplyModifiedProperties();
-//                }
-//            }
+                    if (currentPos != newPos)
+                    {
+                        Undo.RecordObject(vcamValue.transform, "Change Camera Position");
+                        vcamValue.transform.position = newPos;
+                        EditorUtility.SetDirty(vcamValue.transform);
+                    }
+                }
 
-//            if (GUILayout.Button("삭제"))
-//            {
-//                DestroyImmediate(zone.gameObject);
-//                break;
-//            }
+                EditorGUILayout.Space(5);
 
-//            EditorGUILayout.EndVertical();
-//        }
-//    }
+                bool end = false;
+                // 구역 삭제 버튼 - 리스트에서도 삭제
+                if (GUILayout.Button("삭제"))
+                {
+                    end = true;
+                }
 
-//    void AddZone(CameraManager manager)
-//    {
-//        GameObject zoneObj = new GameObject("CameraZone");
-//        zoneObj.transform.parent = manager.transform;
+                EditorGUILayout.EndVertical();
 
-//        var zone = zoneObj.AddComponent<CameraZone>();
+                if(end)
+                {
+                    // GameObject까지 같이 삭제
+                    var vcamObj = vcam.objectReferenceValue as CinemachineVirtualCamera;
 
-//        // Polygon
-//        var polygon = zoneObj.AddComponent<PolygonCollider2D>();
-//        polygon.isTrigger = true;
+                    if (vcamObj != null)
+                    {
+                        Undo.DestroyObjectImmediate(vcamObj.gameObject);
+                    }
 
-//        var triggerScript = zoneObj.AddComponent<CameraZoneTrigger>();
+                    cameraZones.DeleteArrayElementAtIndex(i);
+                    break;
+                }
 
-//        // Camera
-//        GameObject camObj = new GameObject("VirtualCamera");
-//        camObj.transform.parent = zoneObj.transform;
+                EditorGUILayout.Space(5);
+            }
+        }
 
-//        var vcam = camObj.AddComponent<CinemachineVirtualCamera>();
-//        vcam.transform.position = new Vector3(0, 0, -10);
-//        vcam.m_Priority = 0;
+        EditorGUILayout.Space(10);
 
-//        var body = vcam.AddCinemachineComponent<CinemachineFramingTransposer>();
+        // 구역 추가 버튼
+        if (GUILayout.Button("카메라 추가"))
+        {
+            CreateCameraZone(manager);
+        }
 
-//        var confiner = vcam.gameObject.AddComponent<CinemachineConfiner2D>();
-//        confiner.m_BoundingShape2D = polygon;
-//        confiner.InvalidateCache();
+        // 수정한 값 오브젝트에 반영 및 저장
+        serializedObject.ApplyModifiedProperties();
+    }
 
-//        // 연결
-//        zone.vcam = vcam;
-//        zone.confiner = polygon;
+    private void CreateCameraZone(CameraManager manager)
+    {
+        // 구역 오브젝트 생성
+        GameObject zone = new GameObject("CameraZone");
 
-//        triggerScript.zone = zone;
-//        triggerScript.manager = manager;
+        //레이어 설정
+        zone.layer = LayerMask.NameToLayer("MainCameraZone");
 
-//        if (manager.currentCamera == null)
-//        {
-//            manager.currentCamera = vcam;
-//            vcam.Follow = manager.player.transform;
-//            vcam.m_Priority = 100;
-//        }
-//    }
-//}
+        // 위치 기본값
+        zone.transform.position = Vector3.zero;
+
+        // 컴포넌트 추가
+        var vcam = zone.AddComponent<CinemachineVirtualCamera>();
+        var collider = zone.AddComponent<PolygonCollider2D>();
+        var trigger = zone.AddComponent<CameraZoneTrigger>();
+
+        // 기본 설정
+        // 카메라 설정
+        vcam.m_Lens.Orthographic = true;
+        vcam.m_Lens.OrthographicSize = 12; // 기본 카메라 사이즈
+        float height = vcam.m_Lens.OrthographicSize * 2;
+        float width = height * Camera.main.aspect;
+        
+        if (manager.GetCameraZoneList().Count == 0) vcam.Priority = 10;
+        else vcam.Priority = 0;
+
+        // 콜라이더 설정
+        collider.isTrigger = true;
+        Vector2[] point = new Vector2[4];
+
+        point[0] = new Vector2(-width / 2, height / 2);
+        point[1] = new Vector2(width / 2, height / 2);
+        point[2] = new Vector2(width / 2, -height / 2);
+        point[3] = new Vector2(-width / 2, -height / 2);
+
+        collider.points = point;
+
+        //트리거 설정
+        // cameraManager cameraZones리스트에 추가 하기 위한 데이터 초기화
+        CameraZoneData cData = new CameraZoneData
+        {
+            vcam = vcam,
+            collider = collider
+        };
+
+        // CameraManager 리스트에 추가
+        Undo.RecordObject(manager, "Add Camera Zone");
+        manager.AddCamera(cData);
+        
+        zone.transform.SetParent(manager.transform);
+
+        EditorUtility.SetDirty(manager);
+    }
+}

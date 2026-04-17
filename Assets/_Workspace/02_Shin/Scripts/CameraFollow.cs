@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Windows.WebCam;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -39,6 +40,8 @@ public class CameraFollow : MonoBehaviour
     private Vector3 offsetVel;
     private Vector3 currentDynamicOffset;
 
+    private float preSubCamSize;
+
     void Awake()
     {
         // Debug.unityLogger.logEnabled = false; 디버그 로그 제외
@@ -50,6 +53,8 @@ public class CameraFollow : MonoBehaviour
             Debug.LogError("[CameraFollowUI] UI RectTransform 참조가 누락되었습니다.");
 
         currentDynamicOffset = offset;
+
+        preSubCamSize = subCam.orthographicSize;
     }
 
     private void OnEnable()
@@ -75,9 +80,6 @@ public class CameraFollow : MonoBehaviour
         ApplySmoothTransitions();
     }
 
-
-    [SerializeField]
-    Vector3 _Editor_CheckVal;
     /// <summary>
     /// 월드 카메라 위치와 UI(RawImage)의 목표 위치/크기를 계산합니다.
     /// </summary>
@@ -105,7 +107,6 @@ public class CameraFollow : MonoBehaviour
             targetWorldPos = target.position + currentDynamicOffset;
         }
 
-        _Editor_CheckVal = targetWorldPos;
         // 서브 카메라 위치 적용
         transform.position = targetWorldPos;
 
@@ -157,13 +158,13 @@ public class CameraFollow : MonoBehaviour
     {
         if (isFrozen) return;
         frozenPosition = new Vector3(pos.x, pos.y, transform.position.z);
-        subCam.orthographicSize = size; ;
+        subCam.orthographicSize = size;
         isFrozen = true;
     }
 
-    public void UnfreezeCamera(float size)
+    public void UnfreezeCamera()
     {
-        subCam.orthographicSize = size;
+        subCam.orthographicSize = preSubCamSize;
         isFrozen = false;
     }
 }
