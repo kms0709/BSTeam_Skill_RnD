@@ -3503,18 +3503,18 @@ MonoBehaviour:
   moveSpeed: 10
   currentStateType_Animate: 0
   jumpForce: 10
-  slideSpeed: 10
-  wallAttachTime: 0.3
-  wallJumpDelayTime: 0.15
-  lastWallDir: 0
-  isWallJumping: 0
-  dashForce: 50
-  dashDelayTime: 0.15
-  canDash: 0
-  isDashing: 0
-  dashCoolTime: 1
   jumpKey: 32
   inputX: 0
+  dashForce: 70
+  dashDelayTime: 0.1
+  dashCoolTime: 1
+  canDash: 0
+  isDashing: 0
+  slideSpeed: 10
+  wallAttachTime: 0.3
+  wallJumpDelayTime: 0.1
+  lastWallDir: 0
+  isWallJumping: 0
 --- !u!212 &1009255803
 SpriteRenderer:
   m_ObjectHideFlags: 0
