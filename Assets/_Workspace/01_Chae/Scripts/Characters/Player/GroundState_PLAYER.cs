@@ -21,7 +21,6 @@ public class GroundState_PLAYER : IState
 
         //대쉬 boolean 조정
         player.isDashing = false;
-        player.canDash = true;
 
     }
     public void Update(){

@@ -11,6 +11,17 @@ using UnityEngine.UIElements;
 public class Player : CharacterParent
 {   
     //Player Only
+    private enum StateType_Animate {
+        IDLE,
+        MOVING,
+        JUMPING,
+        IN_AIR,
+        DASHING,
+        ATTATCHING_WALL,
+        SLIDING_WALL,
+        DEATH
+    }
+    [SerializeField] private StateType_Animate currentStateType_Animate;
     public float jumpForce; 
     
     [Header("=== Wall Jump Logic ===")]
@@ -30,54 +41,76 @@ public class Player : CharacterParent
     [Header("=== Dash Logic ===")]
     public float dashForce;
     public float dashDelayTime;
-    [HideInInspector] public bool canDash;
+    [HideInInspector] public bool canDash = true;
     [HideInInspector] public bool isDashing;
+    public float dashCoolTime;
+    public CountDownTimer dashTimer; 
 
     [Header("=== Inputs ===")]
     //Key binding
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode dashKey = KeyCode.LeftShift;
     public float inputX;
-    //Main
+
+    //Unity LifetCycle : 
+    #region Main 
+    protected override void Awake(){
+        base.Awake();
+        dashTimer = CountDownTimer.Create(dashCoolTime,() => canDash = true);
+    }
     private void Start(){
         rb.gravityScale = 0;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        dashTimer.StartTimer(0);
     }
     protected override void Update(){
         base.Update();
         MyInput();
+        if(!canDash && IsGrounded()){
+            dashTimer.Tick(Time.deltaTime);
+        }
     }
     protected override void FixedUpdate(){
-        // 물리 연산은 이곳에서 발생하더라도 입력은 Update에서 받아야 키 씹힘이나 무한 반복이 발생하지 않습니다.
+       //쓸모없는 Fixe녀석
     }
-    protected override void UpdateState(){
-        StateTypePhysics newState;
+    #endregion
+
+    //PhysicsState , AnimateState :
+    #region State
+    protected override void UpdateState_Physics(){
+        StateType_Physics newState;
         //상태구별 후 새상태 부여
         if(IsGrounded()){
-            newState = StateTypePhysics.ON_GROUND;
+            newState = StateType_Physics.ON_GROUND;
         }else if(IsOnWall() && !IsGrounded()){
-            newState = StateTypePhysics.ON_WALL;
+            newState = StateType_Physics.ON_WALL;
         }else{
-            newState = StateTypePhysics.ON_AIR;
+            newState = StateType_Physics.ON_AIR;
         }
         //새상태 체크 후 현재 상태를 새상태로 바꿈
-        if(currentPhysicsState == null || currentPhysicsStateType != newState){
+        if(currentState_Physics == null || currentStateType_Physics != newState){
             switch(newState){
-                case StateTypePhysics.ON_GROUND:
-                    ChangeState(new GroundState_PLAYER(this));
+                case StateType_Physics.ON_GROUND:
+                    ChangeState_Physics(new GroundState_PLAYER(this));
                     break;
-                case StateTypePhysics.ON_WALL:
-                    ChangeState(new WallState_PLAYER(this));
+                case StateType_Physics.ON_WALL:
+                    ChangeState_Physics(new WallState_PLAYER(this));
                     break;
-                case StateTypePhysics.ON_AIR:
-                    ChangeState(new AirState_PLAYER(this));
+                case StateType_Physics.ON_AIR:
+                    ChangeState_Physics(new AirState_PLAYER(this));
                     break;
             }
-            currentPhysicsStateType = newState;
+            currentStateType_Physics = newState;
         }
     }
-    //Input Funcs
-    //VI
+    protected override void UpdateState_Animate(){
+        
+    }
+
+    #endregion
+
+    //Input System : 
+    #region Input
     void MyInput(){
         inputX = Input.GetAxis("Horizontal");
         if(IsDashed() && canDash){
@@ -93,8 +126,10 @@ public class Player : CharacterParent
         return Input.GetKeyDown(dashKey);
     }
 
-    //Physics Funcs
-    //@V_M
+    #endregion
+
+    //Move, Jump, SlideWall, AttatchWall, JumpWall, Dash :
+    #region Physics 
     public override void Move(){
         if(inputX != 0 && !isDashing){
             dirX = Mathf.Sign(inputX);
@@ -111,7 +146,7 @@ public class Player : CharacterParent
         rb.velocity = new Vector2(rb.velocity.x,jumpForce);
     }
 
-
+        #region -ㄴ01_Wall
     //--01_Wall Jump Funcs
     //@V_W
     public void SlideWall(){
@@ -151,12 +186,17 @@ public class Player : CharacterParent
     public void TriggerWallJump(){
         isWallJumping = false;
     }
-    //--02_Dash Funcs
+
+        #endregion
+    
+        #region -ㄴ02_Dash
     void Dash(){
-        if(!isDashing)
+        if(isDashing) return;
+
         //booelan 조정
         isDashing = true;
         canDash = false;
+        dashTimer.StartTimer(dashCoolTime);
 
         //마우스 좌표값 구하기
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -176,7 +216,9 @@ public class Player : CharacterParent
         rb.velocity = new Vector2(0f, Mathf.Min(rb.velocity.y, 0f));
     }
     
+        #endregion
 
+    #endregion
     protected override void Attack(){
         //애니메이션 함수 -> 애니메이션 내부에서 attack area 구현 후 area script에서 부모 atk를 가져와서 처리
     }

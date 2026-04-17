@@ -14,9 +14,9 @@ public class WallState_PLAYER : IState
 
     public WallState_PLAYER(Player player){
         this.player = player;
+
         //Set Timer
-        attatchTimer = new CountDownTimer(player.wallAttachTime);
-        attatchTimer.OnTimerEnd += () => canSlide = true;
+        attatchTimer =  CountDownTimer.Create(player.wallAttachTime,() => canSlide = true);
     }
     public void Enter(){
         Debug.Log("OnWall");
@@ -24,8 +24,8 @@ public class WallState_PLAYER : IState
         //현재 벽 방향 저장
         currentWallDir = player.dirX;
 
-        //Set Timer
-        attatchTimer.Start(player.wallAttachTime);
+        //Start Timer
+        attatchTimer.StartTimer(player.wallAttachTime);
 
         //Act
         player.AttatchWall();
@@ -55,25 +55,9 @@ public class WallState_PLAYER : IState
         }else{
             player.SlideWall();
         }
-        // if(player.IsJumped()){
-        //     if(player.lastWallDir != currentWallDir && isPressingAway){
-        //         player.JumpWall();
-        //         // 2. 점프가 '성공'했을 때만 return 하여 바로 아래의 SlideWall/AttatchWall 실행을 막음
-        //         return; 
-        //     }else{
-        //         canSlide = true;
-        //     }
-        // }
-
-        // //Attatch-Slide
-        // if(canSlide){
-        //     player.SlideWall();
-        // }else{
-        //     player.AttatchWall();
-        // }
     }
     public void Exit(){
-        attatchTimer.Stop();
+        attatchTimer.StopTimer();
         player.SetGravity(1);
     }
 }
