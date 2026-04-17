@@ -23,7 +23,6 @@ public abstract class CharacterParent : MonoBehaviour
     }
     
     [SerializeField] protected StateType_Physics currentStateType_Physics;
-    protected IState currentState_Animate;
  
     [Header("=== Physics ===")]
     public float gravityModifier = 1f;
@@ -40,9 +39,16 @@ public abstract class CharacterParent : MonoBehaviour
     public float colGroundOffSet = 1.0f;
     public float colGroundSize = 0.9f;
 
+    [Header("-03_Slope Logic")]
+    public float slopeCheckDistance = 0.2f;
+    public float maxSlopeAngle = 45f;
+    protected RaycastHit2D groundHit;
+    protected bool isOnSlope;
+
 
     [HideInInspector] public Rigidbody2D rb;
     [HideInInspector] public Collider2D col;
+    [HideInInspector] public Animator anim;
 
     [Header("=== Character Values ===")]
     [SerializeField] private int _hpMax;
@@ -67,6 +73,7 @@ public abstract class CharacterParent : MonoBehaviour
     protected virtual void Awake(){
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<Collider2D>();
+        anim = GetComponent<Animator>();
     }
     protected virtual void Update(){
         //물리상태
@@ -75,7 +82,6 @@ public abstract class CharacterParent : MonoBehaviour
 
         //애니메이션 상태
         UpdateState_Animate();
-        currentState_Animate?.Update();
     }
     protected virtual void FixedUpdate(){
         
@@ -90,11 +96,6 @@ public abstract class CharacterParent : MonoBehaviour
         currentState_Physics?.Exit();
         currentState_Physics = newState;
         currentState_Physics.Enter();
-    }
-    public void ChangeState_Animate(IState newState){
-        currentState_Animate?.Exit();
-        currentState_Animate = newState;
-        currentState_Animate.Enter();
     }
     protected virtual void UpdateState_Physics(){
         // StateTypePhysics newState;
@@ -143,8 +144,19 @@ public abstract class CharacterParent : MonoBehaviour
         float checkRadius = col.bounds.extents.x * colGroundSize;
 
         Collider2D hit = Physics2D.OverlapCircle(checkPos,checkRadius,tileMapLayer);
-        // RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistanceGround,tileMapLayer);
-        // Debug.DrawRay(transform.position, Vector2.down * hit.distance, Color.red);
+        
+        // 비탈길 감지 (Raycast)
+        groundHit = Physics2D.Raycast(col.bounds.center, Vector2.down, col.bounds.extents.y + slopeCheckDistance, tileMapLayer);
+        
+        if (groundHit) {
+            float angle = Vector2.Angle(Vector2.up, groundHit.normal);
+            isOnSlope = angle < maxSlopeAngle && angle != 0;
+            
+            Debug.DrawRay(groundHit.point, groundHit.normal, Color.green);
+        } else {
+            isOnSlope = false;
+        }
+
         return hit != null;
     }
 

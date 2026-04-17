@@ -49,7 +49,6 @@ public class Player : CharacterParent
     [Header("=== Inputs ===")]
     //Key binding
     public KeyCode jumpKey = KeyCode.Space;
-    public KeyCode dashKey = KeyCode.LeftShift;
     public float inputX;
 
     //Unity LifetCycle : 
@@ -104,7 +103,40 @@ public class Player : CharacterParent
         }
     }
     protected override void UpdateState_Animate(){
-        
+        StateType_Animate newState;
+        if(IsGrounded()){
+            if(rb.velocity.x != 0){
+                newState = StateType_Animate.MOVING;
+            }else{
+                newState = StateType_Animate.IDLE;
+            }
+        }else if(IsOnWall()){
+            if(rb.velocity.y == 0f){
+                newState = StateType_Animate.ATTATCHING_WALL;
+            }else{
+                newState = StateType_Animate.SLIDING_WALL;
+            }
+        }else{
+            if(rb.velocity.y > 0){
+                newState = StateType_Animate.JUMPING;
+            }else{
+                newState = StateType_Animate.IN_AIR;
+            }
+        if(isDashing){
+            newState = StateType_Animate.DASHING;
+        }
+        }
+        if(newState != currentStateType_Animate)
+        switch(newState){
+            case StateType_Animate.MOVING : anim.SetTrigger("Do_Move"); Debug.Log("Move"); break;
+            case StateType_Animate.DASHING : anim.SetTrigger("Do_Dash"); Debug.Log("Dash");break;
+            case StateType_Animate.JUMPING : anim.SetTrigger("Do_Jump"); Debug.Log("Jump");break;
+            case StateType_Animate.IN_AIR : anim.SetTrigger("Do_Fall"); Debug.Log("Fall");break;
+            case StateType_Animate.ATTATCHING_WALL : anim.SetTrigger("Do_Attatch"); Debug.Log("Attatch");break;
+            case StateType_Animate.SLIDING_WALL : anim.SetTrigger("Do_Slide"); Debug.Log("Slide");break;
+            default : anim.SetTrigger("Do_Idle"); Debug.Log("Idle"); break;
+        }
+        currentStateType_Animate = newState;
     }
 
     #endregion
@@ -123,7 +155,7 @@ public class Player : CharacterParent
         return Input.GetKeyDown(jumpKey);
     }
     public bool IsDashed(){
-        return Input.GetKeyDown(dashKey);
+        return Input.GetMouseButtonDown(1);
     }
 
     #endregion
@@ -134,8 +166,23 @@ public class Player : CharacterParent
         if(inputX != 0 && !isDashing){
             dirX = Mathf.Sign(inputX);
         }
+
         if(!isWallJumping && !isDashing){
-            rb.velocity = new Vector2(inputX * moveSpeed,rb.velocity.y);
+            if(IsGrounded() && isOnSlope){
+                // 경사면을 따라 이동하는 방향 계산 (법선 벡터를 90도 회전)
+                Vector2 slopeDir = new Vector2(groundHit.normal.y, -groundHit.normal.x).normalized;
+                
+                // inputX가 양수일 때 오른쪽 아래로 가려면 그대로, 아닐 경우 보정
+                // 기본적으로 (ny, -nx)는 시계방향 90도 회전이므로 경사면을 따라 오른쪽으로 가는 벡터가 됨
+                rb.velocity = slopeDir * (-inputX * moveSpeed);
+
+                // 경사면에서 멈춰있을 때 미끄러짐 방지
+                if(inputX == 0){
+                    rb.velocity = Vector2.zero;
+                }
+            }else{
+                rb.velocity = new Vector2(inputX * moveSpeed,rb.velocity.y);
+            }
         }
         if(!IsGrounded()){
             ApplyGravity();
