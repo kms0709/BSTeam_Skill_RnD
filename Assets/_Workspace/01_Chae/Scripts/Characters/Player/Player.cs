@@ -166,23 +166,8 @@ public class Player : CharacterParent
         if(inputX != 0 && !isDashing){
             dirX = Mathf.Sign(inputX);
         }
-
         if(!isWallJumping && !isDashing){
-            if(IsGrounded() && isOnSlope){
-                // 경사면을 따라 이동하는 방향 계산 (법선 벡터를 90도 회전)
-                Vector2 slopeDir = new Vector2(groundHit.normal.y, -groundHit.normal.x).normalized;
-                
-                // inputX가 양수일 때 오른쪽 아래로 가려면 그대로, 아닐 경우 보정
-                // 기본적으로 (ny, -nx)는 시계방향 90도 회전이므로 경사면을 따라 오른쪽으로 가는 벡터가 됨
-                rb.velocity = slopeDir * (-inputX * moveSpeed);
-
-                // 경사면에서 멈춰있을 때 미끄러짐 방지
-                if(inputX == 0){
-                    rb.velocity = Vector2.zero;
-                }
-            }else{
-                rb.velocity = new Vector2(inputX * moveSpeed,rb.velocity.y);
-            }
+            rb.velocity = new Vector2(inputX * moveSpeed,rb.velocity.y);
         }
         if(!IsGrounded()){
             ApplyGravity();

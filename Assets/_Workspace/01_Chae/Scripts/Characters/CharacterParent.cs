@@ -39,12 +39,6 @@ public abstract class CharacterParent : MonoBehaviour
     public float colGroundOffSet = 1.0f;
     public float colGroundSize = 0.9f;
 
-    [Header("-03_Slope Logic")]
-    public float slopeCheckDistance = 0.2f;
-    public float maxSlopeAngle = 45f;
-    protected RaycastHit2D groundHit;
-    protected bool isOnSlope;
-
 
     [HideInInspector] public Rigidbody2D rb;
     [HideInInspector] public Collider2D col;
@@ -144,19 +138,8 @@ public abstract class CharacterParent : MonoBehaviour
         float checkRadius = col.bounds.extents.x * colGroundSize;
 
         Collider2D hit = Physics2D.OverlapCircle(checkPos,checkRadius,tileMapLayer);
-        
-        // 비탈길 감지 (Raycast)
-        groundHit = Physics2D.Raycast(col.bounds.center, Vector2.down, col.bounds.extents.y + slopeCheckDistance, tileMapLayer);
-        
-        if (groundHit) {
-            float angle = Vector2.Angle(Vector2.up, groundHit.normal);
-            isOnSlope = angle < maxSlopeAngle && angle != 0;
-            
-            Debug.DrawRay(groundHit.point, groundHit.normal, Color.green);
-        } else {
-            isOnSlope = false;
-        }
-
+        // RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistanceGround,tileMapLayer);
+        // Debug.DrawRay(transform.position, Vector2.down * hit.distance, Color.red);
         return hit != null;
     }
 
