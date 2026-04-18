@@ -176,9 +176,9 @@ public abstract class CharacterParent : MonoBehaviour
     /// </summary>
     protected void ApplyGravity(){
         if(gravityModifier == 0) return;
-        float newVelocity = rb.velocity.y - (gravity * gravityModifier * Time.deltaTime);
+        float newVelocity = rb.linearVelocity.y - (gravity * gravityModifier * Time.deltaTime);
         // newVelocity = Mathf.Max(newVelocity,-maxFallSpeed);
-        rb.velocity = new Vector2(rb.velocity.x,newVelocity);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x,newVelocity);
     }
         protected virtual void OnDrawGizmos(){
         Collider2D gizmoCol = col != null ? col : GetComponent<Collider2D>();

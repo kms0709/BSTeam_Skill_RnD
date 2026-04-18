@@ -149,7 +149,7 @@ public class PlayerMove : MonoBehaviour
         // 대쉬 중: 대쉬 방향으로 속도 고정
         if (isDashing)
         {
-            rigid.velocity = dashDirection * dashSpeed;
+            rigid.linearVelocity = dashDirection * dashSpeed;
             return;
         }
 
@@ -157,22 +157,22 @@ public class PlayerMove : MonoBehaviour
         rigid.AddForce(Vector2.right * h * moveForce, ForceMode2D.Impulse);
 
         // x축 최대 속도 제한
-        if (Mathf.Abs(rigid.velocity.x) > maxSpeed)
+        if (Mathf.Abs(rigid.linearVelocity.x) > maxSpeed)
         {
-            rigid.velocity = new Vector2(
-                Mathf.Sign(rigid.velocity.x) * maxSpeed,
-                rigid.velocity.y);
+            rigid.linearVelocity = new Vector2(
+                Mathf.Sign(rigid.linearVelocity.x) * maxSpeed,
+                rigid.linearVelocity.y);
         }
 
         // 입력이 없을 때 강제 감속 (마찰력이 0이므로 코드에서 브레이크를 잡아줌)
         if (Mathf.Abs(h) < 0.01f)
         {
             float decelerate = isOnGround ? 0.6f : 0.95f; // 바닥이면 빨리 멈추고 공중이면 서서히 멈춤
-            rigid.velocity = new Vector2(rigid.velocity.x * decelerate, rigid.velocity.y);
+            rigid.linearVelocity = new Vector2(rigid.linearVelocity.x * decelerate, rigid.linearVelocity.y);
 
             // 속도가 너무 작아지면 완전히 0으로 고정
-            if (Mathf.Abs(rigid.velocity.x) < 0.1f)
-                rigid.velocity = new Vector2(0f, rigid.velocity.y);
+            if (Mathf.Abs(rigid.linearVelocity.x) < 0.1f)
+                rigid.linearVelocity = new Vector2(0f, rigid.linearVelocity.y);
         }
 
         // ── 점프 ─────────────────────────────────────
@@ -184,7 +184,7 @@ public class PlayerMove : MonoBehaviour
             if (isWallJump)
             {
                 // 벽점프: 벽 반대 방향 + 위로
-                rigid.velocity = Vector2.zero;
+                rigid.linearVelocity = Vector2.zero;
                 rigid.AddForce(
                     new Vector2(-wallDirection * wallJumpHorizontalForce,
                                 wallJumpVerticalForce),
@@ -193,7 +193,7 @@ public class PlayerMove : MonoBehaviour
             else
             {
                 // 일반 점프
-                rigid.velocity = new Vector2(rigid.velocity.x, 0f);
+                rigid.linearVelocity = new Vector2(rigid.linearVelocity.x, 0f);
                 rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             }
         }
@@ -265,7 +265,7 @@ public class PlayerMove : MonoBehaviour
         dashTimeLeft = dashDuration;
         lastDashTime = Time.time;
         rigid.gravityScale = 0f;
-        rigid.velocity = Vector2.zero;
+        rigid.linearVelocity = Vector2.zero;
 
         if (anim != null) anim.SetBool("isRun", false);
     }
@@ -274,6 +274,6 @@ public class PlayerMove : MonoBehaviour
     {
         isDashing = false;
         rigid.gravityScale = originalGravity;
-        rigid.velocity *= 0.2f;
+        rigid.linearVelocity *= 0.2f;
     }
 }

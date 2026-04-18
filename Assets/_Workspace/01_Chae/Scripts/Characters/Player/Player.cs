@@ -76,11 +76,11 @@ public partial class Player : CharacterParent
     protected override void UpdateState_Animate(){
         StateType_Animate newState;
         if(IsGrounded()){
-            newState = rb.velocity.x != 0 ? StateType_Animate.MOVING : StateType_Animate.IDLE;
+            newState = rb.linearVelocity.x != 0 ? StateType_Animate.MOVING : StateType_Animate.IDLE;
         }else if(IsOnWall()){
-            newState = rb.velocity.y == 0f ? StateType_Animate.ATTATCHING_WALL : StateType_Animate.SLIDING_WALL;
+            newState = rb.linearVelocity.y == 0f ? StateType_Animate.ATTATCHING_WALL : StateType_Animate.SLIDING_WALL;
         }else{
-            newState = rb.velocity.y > 0 ? StateType_Animate.JUMPING : StateType_Animate.IN_AIR;
+            newState = rb.linearVelocity.y > 0 ? StateType_Animate.JUMPING : StateType_Animate.IN_AIR;
             if(isDashing) newState = StateType_Animate.DASHING;
         }
         if(newState != currentStateType_Animate){
@@ -115,14 +115,14 @@ public partial class Player : CharacterParent
             dirX = Mathf.Sign(inputX);
         }
         if(!isWallJumping && !isDashing){
-            rb.velocity = new Vector2(inputX * moveSpeed, rb.velocity.y);
+            rb.linearVelocity = new Vector2(inputX * moveSpeed, rb.linearVelocity.y);
         }
         if(!IsGrounded()){
             ApplyGravity();
         }
     }
     public void Jump(){
-        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
     #endregion
 

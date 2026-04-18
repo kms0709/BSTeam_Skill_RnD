@@ -42,12 +42,12 @@ public partial class Player
         }
         Vector2 dirDash = (mousePos - transform.position).normalized;
 
-        rb.velocity = dirDash * dashForce;
+        rb.linearVelocity = dirDash * dashForce;
         Invoke(nameof(TriggerDash), dashDelayTime);
     }
 
     void TriggerDash(){
         isDashing = false;
-        rb.velocity = new Vector2(0f, Mathf.Min(rb.velocity.y, 0f));
+        rb.linearVelocity = new Vector2(0f, Mathf.Min(rb.linearVelocity.y, 0f));
     }
 }

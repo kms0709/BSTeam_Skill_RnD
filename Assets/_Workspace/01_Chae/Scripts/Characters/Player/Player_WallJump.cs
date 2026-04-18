@@ -20,20 +20,20 @@ public partial class Player
     //--Wall Jump Funcs--
     public void SlideWall(){
         SetGravity(0);
-        float smooth = Mathf.Lerp(rb.velocity.y, -slideSpeed, Time.deltaTime);
-        rb.velocity = new Vector2(0, smooth);
+        float smooth = Mathf.Lerp(rb.linearVelocity.y, -slideSpeed, Time.deltaTime);
+        rb.linearVelocity = new Vector2(0, smooth);
     }
 
     public void AttatchWall(){
         SetGravity(0);
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
     }
 
     public void JumpWall(){
         SetGravity(1);
 
         lastWallDir = dirX;
-        rb.velocity = new Vector2(-dirX * moveSpeed * 0.5f, jumpForce);
+        rb.linearVelocity = new Vector2(-dirX * moveSpeed * 0.5f, jumpForce);
 
         isWallJumping = true;
         Invoke(nameof(TriggerWallJump), wallJumpDelayTime);

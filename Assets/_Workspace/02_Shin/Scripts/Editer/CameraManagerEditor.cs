@@ -1,6 +1,6 @@
 using UnityEditor;
 using UnityEngine;
-using Cinemachine;
+using Unity.Cinemachine;
 
 [CustomEditor(typeof(CameraManager))]
 public class CameraManagerEditor : Editor
@@ -206,6 +206,8 @@ public class CameraManagerEditor : Editor
         //레이어 설정
         mainCamZone.layer = LayerMask.NameToLayer("MainCameraZone");
 
+
+        /* 에러로 임시 주석
         // 기본 설정
         // 카메라 설정
         vcam.m_Lens.Orthographic = true;
@@ -221,6 +223,7 @@ public class CameraManagerEditor : Editor
         var subVcam = subCam.AddComponent<CinemachineVirtualCamera>();
         var subVcamBody = subVcam.AddCinemachineComponent<CinemachineFramingTransposer>();
         var subVcamConfiner = subCam.AddComponent<CinemachineConfiner2D>();
+
         subVcam.m_Lens.Orthographic = true;
         subVcam.m_Lens.OrthographicSize = 2.5f;
 
@@ -248,6 +251,8 @@ public class CameraManagerEditor : Editor
             subVcam.Priority = 0;
         }
 
+        */
+
         // 콜라이더 설정
         collider.isTrigger = true;
         Vector2[] point = new Vector2[4];
@@ -262,6 +267,7 @@ public class CameraManagerEditor : Editor
 
         collider.points = point;
 
+        /* 상위 코드에서 에러로 임시 주석
         // 트리거 설정
         trigger.mainVcam = vcam;
         trigger.subVcam = subVcam;
@@ -280,5 +286,6 @@ public class CameraManagerEditor : Editor
         manager.AddCamera(cData);
         
         EditorUtility.SetDirty(manager);
+        */
     }
 }

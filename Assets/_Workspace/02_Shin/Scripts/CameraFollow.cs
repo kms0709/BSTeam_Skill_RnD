@@ -1,4 +1,4 @@
-using Cinemachine;
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
@@ -89,9 +89,10 @@ public class CameraFollow : MonoBehaviour
         // 동결 모드일 때는 방의 중앙을 기준으로, 팔로우 모드일 때는 플레이어를 기준으로 UI 위치를 잡습니다.
         //Vector3 lookAtTarget = isFrozen ? frozenPosition : target.position;
         // 3. 현재 카메라의 월드 위치 (전환 중일 때의 중간 위치도 포함됨)
-        Vector3 currentCamWorldPos = currentActiveVCam.State.FinalPosition;
-        Vector3 viewportPos = mainCam.WorldToViewportPoint(currentCamWorldPos);
+        //Vector3 currentCamWorldPos = currentActiveVCam.State.FinalPosition; // 에러로 임시 주석
+        //Vector3 viewportPos = mainCam.WorldToViewportPoint(currentCamWorldPos);
 
+        /* 에러로 임시 주석
         // 뷰포트(0~1)를 캔버스 좌표계로 변환 (0~CanvasWidth, 0~CanvasHeight)
         float uiX = viewportPos.x * canvasRect.rect.width;
         float uiY = viewportPos.y * canvasRect.rect.height;
@@ -101,8 +102,10 @@ public class CameraFollow : MonoBehaviour
         float halfH = uiH * 0.5f;
         uiX = Mathf.Clamp(uiX, halfW, canvasRect.rect.width - halfW);
         uiY = Mathf.Clamp(uiY, halfH, canvasRect.rect.height - halfH);
+        
 
         targetUIPos = new Vector2(uiX, uiY);
+        */
     }
 
     /// <summary>

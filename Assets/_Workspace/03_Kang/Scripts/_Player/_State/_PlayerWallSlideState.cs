@@ -8,7 +8,7 @@ public class _PlayerWallSlideState : _IPlayerState<_Player>
     {
         Debug.Log("State : Wall Slide");
 
-        handle.Rigidbody2D.velocity = Vector3.zero;
+        handle.Rigidbody2D.linearVelocity = Vector3.zero;
         handle.Rigidbody2D.gravityScale = 0f;
     }
 
