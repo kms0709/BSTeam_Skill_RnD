@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5404986757859762910}
   - component: {fileID: 3586445359687174647}
   - component: {fileID: 6894372354005819161}
+  - component: {fileID: 3452047800510324071}
   m_Layer: 0
   m_Name: p_SubCamera
   m_TagString: Untagged
@@ -65,11 +66,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
+  near clip plane: 0.1
+  far clip plane: 5000
+  field of view: 40
   orthographic: 1
-  orthographic size: 2.5
+  orthographic size: 16.035652
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -141,12 +142,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b340f49b5dd06bd458234845959893e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
   mainCam: {fileID: 0}
+  subCamBrain: {fileID: 3452047800510324071}
+  freezeVCam: {fileID: 0}
+  activePriority: 30
+  inactivePriority: 0
   pipRawImageRect: {fileID: 0}
   canvasRect: {fileID: 0}
-  smoothSpeed: 0
-  offset: {x: 0, y: 0, z: -10}
-  targetScaleX: 6
-  targetScaleY: 3
-  transitionSmoothTime: 1
+  transitionSmoothTime: 0
+--- !u!114 &3452047800510324071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 242096812791835181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72ece51f2901e7445ab60da3685d6b5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ShowDebugText: 0
+  m_ShowCameraFrustum: 1
+  m_IgnoreTimeScale: 0
+  m_WorldUpOverride: {fileID: 0}
+  m_UpdateMethod: 2
+  m_BlendUpdateMethod: 1
+  m_DefaultBlend:
+    m_Style: 1
+    m_Time: 1
+    m_CustomCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  m_CustomBlends: {fileID: 0}
+  m_CameraCutEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_CameraActivatedEvent:
+    m_PersistentCalls:
+      m_Calls: []
