@@ -5,12 +5,12 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class CameraZoneTrigger : MonoBehaviour
 {
-    [SerializeField] private CinemachineVirtualCamera MainVcam; 
-    [SerializeField] private CinemachineVirtualCamera SubVcam; 
+    [SerializeField] private CinemachineCamera MainVcam; 
+    [SerializeField] private CinemachineCamera SubVcam; 
 
     // 외부(에디터 스크립트 등)에서 접근해야 한다면 프로퍼티를 따로 만들어줍니다.
-    public CinemachineVirtualCamera mainVcam { get => MainVcam; set => MainVcam = value; }
-    public CinemachineVirtualCamera subVcam { get => SubVcam; set => SubVcam = value; }
+    public CinemachineCamera mainVcam { get => MainVcam; set => MainVcam = value; }
+    public CinemachineCamera subVcam { get => SubVcam; set => SubVcam = value; }
 
     [Header("우선순위 설정")]
     [SerializeField] private int activePriority = 20;
@@ -21,7 +21,7 @@ public class CameraZoneTrigger : MonoBehaviour
     private void Awake()
     {
         // 런타임에 vCam이 누락되었다면 컴포넌트에서 시도 (mainVCam 위주)
-        if (mainVcam == null) mainVcam = GetComponent<CinemachineVirtualCamera>();
+        if (mainVcam == null) mainVcam = GetComponent<CinemachineCamera>();
         pol = GetComponent<PolygonCollider2D>();
     }
 
@@ -53,13 +53,13 @@ public class CameraZoneTrigger : MonoBehaviour
     private void OnValidate()
     {
         if (pol == null) pol = GetComponent<PolygonCollider2D>();
-        if (mainVcam == null) mainVcam = GetComponent<CinemachineVirtualCamera>();
+        if (mainVcam == null) mainVcam = GetComponent<CinemachineCamera>();
         if (mainVcam != null && pol != null) ColliderSync();
     }
 
     private void ColliderSync()
     {
-        float height = mainVcam.m_Lens.OrthographicSize * 2;
+        float height = mainVcam.Lens.OrthographicSize * 2;
         float width = height * Camera.main.aspect;
 
         // 콜라이더 설정

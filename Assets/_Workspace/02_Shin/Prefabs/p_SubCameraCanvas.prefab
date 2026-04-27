@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7698180739324849458}
   - component: {fileID: 4503705387184131580}
   - component: {fileID: 7061510939938482297}
-  m_Layer: 7
+  m_Layer: 13
   m_Name: RawImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -84,7 +84,7 @@ GameObject:
   - component: {fileID: 5937755494225221352}
   - component: {fileID: 5950091493762223033}
   - component: {fileID: 2441058363324296999}
-  m_Layer: 7
+  m_Layer: 13
   m_Name: p_SubCameraCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -129,6 +129,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0

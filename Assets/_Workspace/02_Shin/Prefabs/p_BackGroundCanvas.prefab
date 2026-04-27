@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6426112503938138488}
   - component: {fileID: 2273676970176476998}
   - component: {fileID: 4991921020684546665}
-  m_Layer: 5
+  m_Layer: 12
   m_Name: BackGoundImage_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ GameObject:
   - component: {fileID: 3228689175871077002}
   - component: {fileID: 1877211041124232159}
   - component: {fileID: 2516857101120993039}
-  m_Layer: 5
+  m_Layer: 12
   m_Name: BackGoundImage_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -186,7 +186,7 @@ GameObject:
   - component: {fileID: 8969672718382293784}
   - component: {fileID: 3351138259240583582}
   - component: {fileID: 8573907610547627759}
-  m_Layer: 5
+  m_Layer: 12
   m_Name: BackGoundImage_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -273,7 +273,7 @@ GameObject:
   - component: {fileID: 7179852789249041585}
   - component: {fileID: 8619881603681105682}
   - component: {fileID: 9059345023717105062}
-  m_Layer: 5
+  m_Layer: 12
   m_Name: BackGoundImage_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -360,7 +360,7 @@ GameObject:
   - component: {fileID: 1470363548190471238}
   - component: {fileID: 824828539167328461}
   - component: {fileID: 531173778686832213}
-  m_Layer: 5
+  m_Layer: 12
   m_Name: p_BackGroundCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -409,6 +409,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -466,7 +467,7 @@ GameObject:
   - component: {fileID: 7450523912846630050}
   - component: {fileID: 3759861744539051566}
   - component: {fileID: 5537958005013754243}
-  m_Layer: 5
+  m_Layer: 12
   m_Name: BackGoundImage_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
