@@ -1,11 +1,15 @@
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraFollow : MonoBehaviour
 {
     [Header("대상 및 카메라 참조")]
     [SerializeField] private Camera mainCam;
     [SerializeField] private CinemachineBrain subCamBrain;
+
+    // 카메라 고정할 때만 사용 필요
+    //[SerializeField] private Image outLine;
 
     [Header("고정용 카메라 설정")]
     [SerializeField] private CinemachineCamera freezeVCam; // 고정 전용 VCam
@@ -84,6 +88,8 @@ public class CameraFollow : MonoBehaviour
         float uiH = (targetScaleY / mainWorldH) * canvasRect.rect.height;
         targetUISize = new Vector2(uiW, uiH);
 
+        // 카메라 고정할 때만 사용 필요
+        //outLine.rectTransform.sizeDelta = new Vector2(uiW + 25, uiH + 25);
 
         // 2. UI 위치 계산: 플레이어의 월드 위치 -> 메인 카메라의 뷰포트 좌표 -> 캔버스 좌표
         // 동결 모드일 때는 방의 중앙을 기준으로, 팔로우 모드일 때는 플레이어를 기준으로 UI 위치를 잡습니다.
