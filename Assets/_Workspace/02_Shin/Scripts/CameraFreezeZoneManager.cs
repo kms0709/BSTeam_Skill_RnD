@@ -29,7 +29,9 @@ public class MoveData
 public class CameraFreezeZoneManager : MonoBehaviour
 {
     [SerializeField] private List<FreezeZoneData> freezeZonelist = new List<FreezeZoneData>();
-    
+    [SerializeField] private GameObject freezeZonePrefab;
+    public GameObject FreezeZonePrefab => freezeZonePrefab;
+
     // 리스트에 frezze 구역 추가
     public void AddPoint(FreezeZoneData zone)
     {

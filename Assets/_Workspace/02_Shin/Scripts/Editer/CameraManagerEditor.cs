@@ -219,8 +219,8 @@ public class CameraManagerEditor : Editor
         // 사이즈
         subVcam.Lens.OrthographicSize = 2.5f;
 
-        // damping설정 필요
-        //follow. = new Vector3(0, 0, 0);
+        // damping설정
+        follow.TrackerSettings.PositionDamping = Vector3.zero;
 
         // Confiner (Unity 6 방식)
         var confiner = subCam.AddComponent<CinemachineConfiner2D>();
