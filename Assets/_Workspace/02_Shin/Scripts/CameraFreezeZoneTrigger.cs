@@ -1,17 +1,14 @@
 using UnityEngine;
 
-public class CameraFreezeZoneTrigger : MonoBehaviour
+public class CameraFreezeZoneTrigger : MonoBehaviour, ICameraInteractable
 {
     public static System.Action<float, Vector3> OnCameraTriggerEnter;
 
-    [field : SerializeField] public float cameraZoneSize { get; set; }
-    [field : SerializeField] public Vector3 cameraZonePosition { get; set; }
+    [field: SerializeField] public float cameraZoneSize { get; set; }
+    [field: SerializeField] public Vector3 cameraZonePosition { get; set; }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void SetCamera()
     {
-        if(collision.CompareTag("Player"))
-        {
-            OnCameraTriggerEnter?.Invoke(cameraZoneSize, cameraZonePosition);
-        }
+        OnCameraTriggerEnter?.Invoke(cameraZoneSize, cameraZonePosition);
     }
 }

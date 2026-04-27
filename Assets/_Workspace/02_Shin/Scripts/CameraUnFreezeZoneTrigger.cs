@@ -1,14 +1,11 @@
 using UnityEngine;
 
-public class CameraUnFreezeZoneTrigger : MonoBehaviour
+public class CameraUnFreezeZoneTrigger : MonoBehaviour, ICameraInteractable
 {
     public static System.Action OnFreezeCameraTriggerEnter;
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void SetCamera()
     {
-        if (collision.CompareTag("Player"))
-        {
-            OnFreezeCameraTriggerEnter?.Invoke();
-        }
+        OnFreezeCameraTriggerEnter?.Invoke();
     }
 }
