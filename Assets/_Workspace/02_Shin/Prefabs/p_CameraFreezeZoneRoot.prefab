@@ -45,3 +45,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   freezeZonelist: []
+  freezeZonePrefab: {fileID: 8307289116992634735, guid: dc6f11bd0d4843247aa96d6b508956db, type: 3}

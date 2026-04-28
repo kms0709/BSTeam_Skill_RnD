@@ -51,8 +51,8 @@ public class CameraManagerEditor : Editor
                 EditorGUILayout.Space(5);
 
                 // 카메라 위치, 사이즈 설정
-                var vcamValue = vcam.objectReferenceValue as CinemachineVirtualCamera;
-                var subVcamValue = subVcam.objectReferenceValue as CinemachineVirtualCamera;
+                var vcamValue = vcam.objectReferenceValue as CinemachineCamera;
+                var subVcamValue = subVcam.objectReferenceValue as CinemachineCamera;
 
                 if (vcamValue == null)
                 {
@@ -62,12 +62,12 @@ public class CameraManagerEditor : Editor
                 {
                     EditorGUILayout.LabelField("메인 카메라", EditorStyles.boldLabel);
                     // 사이즈
-                    float newSize = EditorGUILayout.FloatField("구역 크기", vcamValue.m_Lens.OrthographicSize);
+                    float newSize = EditorGUILayout.FloatField("구역 크기", vcamValue.Lens.OrthographicSize);
 
-                    if (!Mathf.Approximately(newSize, vcamValue.m_Lens.OrthographicSize))
+                    if (!Mathf.Approximately(newSize, vcamValue.Lens.OrthographicSize))
                     {
                         Undo.RecordObject(vcamValue, "Change Camera Size");
-                        vcamValue.m_Lens.OrthographicSize = newSize;
+                        vcamValue.Lens.OrthographicSize = newSize;
                         EditorUtility.SetDirty(vcamValue);
 
                         // 콜라이더도 동시에 크기 업데이트
@@ -123,12 +123,12 @@ public class CameraManagerEditor : Editor
                         //서브 카메라
                         EditorGUILayout.LabelField("서브 카메라", EditorStyles.boldLabel);
                         // 사이즈 설정
-                        float newSubSize = EditorGUILayout.FloatField("화면 크기", subVcamValue.m_Lens.OrthographicSize);
+                        float newSubSize = EditorGUILayout.FloatField("화면 크기", subVcamValue.Lens.OrthographicSize);
 
-                        if (!Mathf.Approximately(newSubSize, subVcamValue.m_Lens.OrthographicSize))
+                        if (!Mathf.Approximately(newSubSize, subVcamValue.Lens.OrthographicSize))
                         {
                             Undo.RecordObject(subVcamValue, "Change SubCamera Size");
-                            subVcamValue.m_Lens.OrthographicSize = newSubSize;
+                            subVcamValue.Lens.OrthographicSize = newSubSize;
                             EditorUtility.SetDirty(subVcamValue);
                         }
                     }
@@ -180,66 +180,53 @@ public class CameraManagerEditor : Editor
 
     private void CreateCameraZone(CameraManager manager)
     {
-        // 구역 오브젝트 생성
+        // 부모 오브젝트 생성
         GameObject zone = new GameObject("CameraZoneRoot");
-
-        // 위치 기본값
         zone.transform.position = Vector3.zero;
         zone.transform.SetParent(manager.transform);
 
-        // 부모 오브젝트에 콜라이더 및 트리거 체크 추가
-        
-        
-
-        //// 메인 카메라
-        // 메인 카메라 오브젝트 생성
+        // 메인 카메라
         GameObject mainCamZone = new GameObject("MainCameraZone");
-
-        // 부모 오브젝트 설정
         mainCamZone.transform.SetParent(zone.transform);
 
-        // 컴포넌트 추가
-        var vcam = mainCamZone.AddComponent<CinemachineVirtualCamera>();
+        // NEW
+        var vcam = mainCamZone.AddComponent<CinemachineCamera>();
+
+        // 콜라이더 + 트리거
         var collider = mainCamZone.AddComponent<PolygonCollider2D>();
         var trigger = mainCamZone.AddComponent<CameraZoneTrigger>();
 
-        //레이어 설정
-        mainCamZone.layer = LayerMask.NameToLayer("MainCameraZone");
+        // Orthographic은 이제 Camera가 담당
+        if (Camera.main != null) Camera.main.orthographic = true;
 
+        // 사이즈 설정 (여전히 가능)
+        vcam.Lens.OrthographicSize = 12;
 
-        /* 에러로 임시 주석
-        // 기본 설정
-        // 카메라 설정
-        vcam.m_Lens.Orthographic = true;
-        vcam.m_Lens.OrthographicSize = 12; // 기본 카메라 사이즈
-
-        //// 서브 카메라
-        // 서브 카메라 오브젝트 생성
-        GameObject subCam = new GameObject("subCamera");
-
-        // 부모 오브젝트 설정
+        // 서브 카메라
+        GameObject subCam = new GameObject("SubCamera");
         subCam.transform.SetParent(zone.transform);
 
-        var subVcam = subCam.AddComponent<CinemachineVirtualCamera>();
-        var subVcamBody = subVcam.AddCinemachineComponent<CinemachineFramingTransposer>();
-        var subVcamConfiner = subCam.AddComponent<CinemachineConfiner2D>();
+        // NEW
+        var subVcam = subCam.AddComponent<CinemachineCamera>();
+        var follow = subCam.AddComponent<CinemachineFollow>();
 
-        subVcam.m_Lens.Orthographic = true;
-        subVcam.m_Lens.OrthographicSize = 2.5f;
+        //채널 설정
+        subVcam.OutputChannel = OutputChannels.Channel01;
 
-        subCam.layer = LayerMask.NameToLayer("GameScreen");
+        // Follow
+        subVcam.Follow = manager.Player;
 
-        subVcam.m_StandbyUpdate = CinemachineVirtualCameraBase.StandbyUpdateMode.Never;
+        // 사이즈
+        subVcam.Lens.OrthographicSize = 2.5f;
 
-        // 부드러운 움직임 삭제
-        subVcamBody.m_XDamping = 0;
-        subVcamBody.m_YDamping = 0;
+        // damping설정
+        follow.TrackerSettings.PositionDamping = Vector3.zero;
 
-        // 서브 카메라 제한 구역 설정
-        subVcamConfiner.m_BoundingShape2D = collider;
-        subVcam.m_Follow = manager.Player;
+        // Confiner (Unity 6 방식)
+        var confiner = subCam.AddComponent<CinemachineConfiner2D>();
+        confiner.BoundingShape2D = collider; // 이름 바뀐 경우 inspector 확인 필요
 
-        // 카메라 우선순위 설정
+        // Priority
         if (manager.GetCameraZoneList().Count == 0)
         {
             vcam.Priority = 20;
@@ -251,15 +238,13 @@ public class CameraManagerEditor : Editor
             subVcam.Priority = 0;
         }
 
-        */
-
-        // 콜라이더 설정
+        // Collider 설정
         collider.isTrigger = true;
+
+        float height = vcam.Lens.OrthographicSize * 2;
+        float width = height * (Camera.main != null ? Camera.main.aspect : 1.777f);
+
         Vector2[] point = new Vector2[4];
-
-        float height = vcam.m_Lens.OrthographicSize * 2;
-        float width = height * Camera.main.aspect;
-
         point[0] = new Vector2(-width / 2, height / 2);
         point[1] = new Vector2(width / 2, height / 2);
         point[2] = new Vector2(width / 2, -height / 2);
@@ -267,7 +252,7 @@ public class CameraManagerEditor : Editor
 
         collider.points = point;
 
-        /* 상위 코드에서 에러로 임시 주석
+        //상위 코드에서 에러로 임시 주석
         // 트리거 설정
         trigger.mainVcam = vcam;
         trigger.subVcam = subVcam;
@@ -286,6 +271,6 @@ public class CameraManagerEditor : Editor
         manager.AddCamera(cData);
         
         EditorUtility.SetDirty(manager);
-        */
+        
     }
 }

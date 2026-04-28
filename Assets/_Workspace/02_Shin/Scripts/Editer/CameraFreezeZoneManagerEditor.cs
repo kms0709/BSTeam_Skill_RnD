@@ -1,7 +1,5 @@
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.XR;
 
 [CustomEditor(typeof(CameraFreezeZoneManager))]
 public class CameraFreezeZoneManagerEditor : Editor
@@ -17,6 +15,7 @@ public class CameraFreezeZoneManagerEditor : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
+        DrawDefaultInspector();
 
         if (foldouts == null || foldouts.Length != freezeZones.arraySize)
         {
@@ -59,7 +58,6 @@ public class CameraFreezeZoneManagerEditor : Editor
                 {
                     end = true;
                 }
-
             }
 
             // 박스 구역 닫기
@@ -110,11 +108,16 @@ public class CameraFreezeZoneManagerEditor : Editor
         // 부모 오브젝트 설정
         zone.transform.SetParent(manager.transform);
 
+        GameObject cameraBoundary = new GameObject("CameraBoundary");
+        var col = cameraBoundary.AddComponent<EdgeCollider2D>();
+        cameraBoundary.transform.SetParent(zone.transform);
+
+
         FreezeZoneData zoneData = new FreezeZoneData
         {
             rootObject = zone,
-            stopData = CreateStopZone(zone),
-            moveData = CreateMoveZone(zone)
+            stopData = CreateStopZone(zone, manager),
+            moveData = CreateMoveZone(zone, manager)
         };
 
         // 리스트 추가
@@ -124,7 +127,7 @@ public class CameraFreezeZoneManagerEditor : Editor
     }
 
     // stop존 생성
-    private StopData CreateStopZone(GameObject zone)
+    private StopData CreateStopZone(GameObject zone, CameraFreezeZoneManager manager)
     {
         // Stop 구역 오브젝트 생성
         GameObject stop = new GameObject("stopPoint");
@@ -134,17 +137,20 @@ public class CameraFreezeZoneManagerEditor : Editor
         stop.transform.SetParent(zone.transform);
 
         // 컴포넌트 추가
-        var collider = stop.AddComponent<BoxCollider2D>();
         var trigger = stop.AddComponent<CameraFreezeZoneTrigger>();
 
-        // 콜라이더 설정
-        collider.isTrigger = true;
+        //프리즈 존 프리팹 추가
+        var prefab = manager.FreezeZonePrefab;
+        var freezeZone = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+
+        // 부모 설정
+        freezeZone.transform.SetParent(stop.transform);
 
         return new StopData { pointSize = Vector3.zero, cameraPosition = Vector3.zero, cameraSize = 0, pointPosition = Vector3.zero};
     }
 
     // move존 생성
-    private MoveData CreateMoveZone(GameObject zone)
+    private MoveData CreateMoveZone(GameObject zone, CameraFreezeZoneManager manager)
     {
         // Move 구역 오브젝트 생성
         GameObject move = new GameObject("movePoint");
@@ -154,11 +160,14 @@ public class CameraFreezeZoneManagerEditor : Editor
         move.transform.SetParent(zone.transform);
 
         // 컴포넌트 추가
-        var collider = move.AddComponent<BoxCollider2D>();
         var trigger = move.AddComponent<CameraUnFreezeZoneTrigger>();
 
-        // 콜라이더 설정
-        collider.isTrigger = true;
+        //프리즈 존 프리팹 추가
+        var prefab = manager.FreezeZonePrefab;
+        var freezeZone = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+
+        // 부모 설정
+        freezeZone.transform.SetParent(move.transform);
 
         return new MoveData { size = Vector3.zero, position = Vector3.zero};
     }

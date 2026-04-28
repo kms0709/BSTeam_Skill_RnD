@@ -1,14 +1,20 @@
 using UnityEngine;
 
-public class CameraUnFreezeZoneTrigger : MonoBehaviour
+public class CameraUnFreezeZoneTrigger : MonoBehaviour, ICameraInteractable
 {
     public static System.Action OnFreezeCameraTriggerEnter;
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    //카메라 고정시 벽 오브젝트
+    [field: SerializeField] public GameObject cameraBoundary { get; set; }
+
+    public void SetCamera()
     {
-        if (collision.CompareTag("Player"))
+        OnFreezeCameraTriggerEnter?.Invoke();
+
+        if (cameraBoundary != null)
         {
-            OnFreezeCameraTriggerEnter?.Invoke();
+            cameraBoundary.SetActive(false);
+            Debug.Log("벽 비활성화 완료");
         }
     }
 }

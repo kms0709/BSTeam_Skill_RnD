@@ -7,8 +7,8 @@ public class CameraZoneData
 {
     public string zoneName;
 
-    public CinemachineVirtualCamera mainVCam;
-    public CinemachineVirtualCamera subVCam;
+    public CinemachineCamera mainVCam;
+    public CinemachineCamera subVCam;
     public GameObject camRoot;
 
     public PolygonCollider2D collider;
@@ -43,7 +43,7 @@ public class CameraManager : MonoBehaviour
 
             Gizmos.color = new Color(0f, 1f, 1f, 0.4f); // 시안색 (반투명)
             
-            float height = zone.mainVCam.m_Lens.OrthographicSize * 2;
+            float height = zone.mainVCam.Lens.OrthographicSize * 2;
             float width = height * Camera.main.aspect;
 
             Vector3 center = zone.mainVCam.transform.position;
@@ -52,7 +52,7 @@ public class CameraManager : MonoBehaviour
 
             Gizmos.color = new Color(1f, 0.5f, 1f, 0.4f); // 시안색 (반투명)
 
-            float subHeight = zone.subVCam.m_Lens.OrthographicSize * 2;
+            float subHeight = zone.subVCam.Lens.OrthographicSize * 2;
             float subWidth = subHeight * Camera.main.aspect;
 
             Vector3 subCenter = zone.subVCam.transform.position;
