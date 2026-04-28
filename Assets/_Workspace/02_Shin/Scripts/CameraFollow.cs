@@ -1,5 +1,6 @@
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -7,8 +8,11 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private Camera mainCam;
     [SerializeField] private CinemachineBrain subCamBrain;
 
+    // 카메라 고정할 때만 사용 필요
+    //[SerializeField] private Image outLine;
+
     [Header("고정용 카메라 설정")]
-    [SerializeField] private CinemachineVirtualCamera freezeVCam; // 고정 전용 VCam
+    [SerializeField] private CinemachineCamera freezeVCam; // 고정 전용 VCam
     [SerializeField] private int activePriority = 100;   // 활성화 시 우선순위
     [SerializeField] private int inactivePriority = 0; // 비활성화 시 우선순위
 
@@ -84,15 +88,19 @@ public class CameraFollow : MonoBehaviour
         float uiH = (targetScaleY / mainWorldH) * canvasRect.rect.height;
         targetUISize = new Vector2(uiW, uiH);
 
+        // 카메라 고정할 때만 사용 필요
+        //outLine.rectTransform.sizeDelta = new Vector2(uiW + 25, uiH + 25);
 
         // 2. UI 위치 계산: 플레이어의 월드 위치 -> 메인 카메라의 뷰포트 좌표 -> 캔버스 좌표
         // 동결 모드일 때는 방의 중앙을 기준으로, 팔로우 모드일 때는 플레이어를 기준으로 UI 위치를 잡습니다.
         //Vector3 lookAtTarget = isFrozen ? frozenPosition : target.position;
         // 3. 현재 카메라의 월드 위치 (전환 중일 때의 중간 위치도 포함됨)
-        //Vector3 currentCamWorldPos = currentActiveVCam.State.FinalPosition; // 에러로 임시 주석
-        //Vector3 viewportPos = mainCam.WorldToViewportPoint(currentCamWorldPos);
+        //
+        Vector3 currentCamWorldPos = currentActiveVCam.State.RawPosition; // 에러로 임시 주석
+        
+        Vector3 viewportPos = mainCam.WorldToViewportPoint(currentCamWorldPos);
 
-        /* 에러로 임시 주석
+        //에러로 임시 주석
         // 뷰포트(0~1)를 캔버스 좌표계로 변환 (0~CanvasWidth, 0~CanvasHeight)
         float uiX = viewportPos.x * canvasRect.rect.width;
         float uiY = viewportPos.y * canvasRect.rect.height;
@@ -105,7 +113,7 @@ public class CameraFollow : MonoBehaviour
         
 
         targetUIPos = new Vector2(uiX, uiY);
-        */
+        
     }
 
     /// <summary>
@@ -113,6 +121,7 @@ public class CameraFollow : MonoBehaviour
     /// </summary>
     private void ApplySmoothTransitions()
     {
+        // 프리즈 상태 일때 적용
         if (transitionSmoothTime > 0f)
         {
             // UI 위치 부드럽게 이동
@@ -132,9 +141,13 @@ public class CameraFollow : MonoBehaviour
     {
         if (isFrozen || freezeVCam == null) return;
 
+        // 0. 여기서 카메라 smooth를 줘서 위치를 즉시 설정이 아닌 부드럽게 이동하게 설정
+        // ApplySmoothTransitions();
+
         // 1. 고정 카메라의 위치와 렌즈 크기를 즉시 설정
         freezeVCam.transform.position = new Vector3(pos.x, pos.y, -10);
-        freezeVCam.m_Lens.OrthographicSize = size;
+        //freezeVCam.ForceCameraPosition(new Vector3(pos.x, pos.y, -10), Quaternion.identity); // 위치 강제 고정
+        freezeVCam.Lens.OrthographicSize = size;
 
         // 2. 우선순위를 높여서 시네머신이 이 카메라를 선택하게 만듦
         freezeVCam.Priority = activePriority;
