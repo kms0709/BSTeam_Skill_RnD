@@ -114,8 +114,20 @@ public partial class Player : CharacterParent
         if(inputX != 0 && !isDashing){
             dirX = Mathf.Sign(inputX);
         }
+        // else if(inputX == 0 && (IsGrounded() || IsOnSlope())){
+            // rb.linearVelocity = Vector2.zero;
+        // }
+        
+        // if(IsOnSlope()){
+        //     rb.linearVelocity = new Vector2(-inputX * moveSpeed * slopeNormalPerp.x,-inputX * moveSpeed * slopeNormalPerp.y);
+        //     // transform.position 
+        // }
         if(!isWallJumping && !isDashing){
+            
             rb.linearVelocity = new Vector2(inputX * moveSpeed, rb.linearVelocity.y);
+            // rb.Slide()
+            // Vector2 myVelo = new Vector2(inputX * moveSpeed,rb.linearVelocityY);
+            // rb.Slide(myVelo,Time.deltaTime,slideMovement);
         }
         if(!IsGrounded()){
             ApplyGravity();

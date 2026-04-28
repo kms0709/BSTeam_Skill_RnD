@@ -40,6 +40,12 @@ public abstract class CharacterParent : MonoBehaviour
     public float colGroundOffSet = 1.0f;
     public float colGroundSize = 0.9f;
 
+    [Space(10f)]
+    [Tooltip("경사면 감지 Raycast 길이")]
+    public float colSlopeRayDist = 0.5f;
+    [Tooltip("이 각도(도) 이상이면 경사면으로 판정")]
+    public float slopeAngleLimit = 5f;
+    protected Vector2 slopeNormalPerp;
 
     [HideInInspector] public Rigidbody2D rb;
     [HideInInspector] public Collider2D col;
@@ -139,6 +145,8 @@ public abstract class CharacterParent : MonoBehaviour
         float checkRadius = col.bounds.extents.x * colGroundSize;
 
         Collider2D hit = Physics2D.OverlapCircle(checkPos,checkRadius,tileMapLayer);
+        // Collider2D hit = Physics2D.OverlapBox(checkPos, Vector2.one, 0f, tileMapLayer);
+
         // RaycastHit2D hit = Physics2D.Raycast(transform.position,Vector2.down,rayDistanceGround,tileMapLayer);
         // Debug.DrawRay(transform.position, Vector2.down * hit.distance, Color.red);
         return hit != null;
@@ -157,6 +165,42 @@ public abstract class CharacterParent : MonoBehaviour
         Collider2D hit = Physics2D.OverlapCircle(checkPos, checkRadius, tileMapLayer);
         return hit != null;
     }
+
+    /// <summary>
+    /// 지면 법선(Normal)을 기반으로 경사면 여부를 판정하는 함수
+    /// </summary>
+    /// <returns>
+    /// 캐릭터 발 아래 Raycast 가 tileMapLayer 에 닿았을 때,
+    /// 지면 법선과 Vector2.up 의 각도가 slopeAngleLimit 이상이면 true
+    /// </returns>
+    /// 
+
+    
+    // protected virtual bool IsOnSlope()
+    // {
+    //     // 발 중앙 아래에서 레이 시작점 설정
+    //     Vector2 rayOrigin = new Vector2(col.bounds.center.x, col.bounds.min.y);
+
+    //     RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, colSlopeRayDist, tileMapLayer);
+
+    //     // Debug: 레이 경로 (흰색)
+    //     Debug.DrawRay(rayOrigin, Vector2.down * colSlopeRayDist, Color.white);
+
+    //     if (hit.collider != null)
+    //     {
+    //         // 지면 법선과 위쪽 방향의 각도 계산
+    //         float angle = Vector2.Angle(hit.normal, Vector2.up);
+    //         slopeNormalPerp = Vector2.Perpendicular(hit.normal).normalized;
+
+    //         // Debug: 지면 법선 방향 (노란색)
+    //         Debug.DrawRay(hit.point, hit.normal * 0.4f, Color.yellow);
+
+    //         return angle >= slopeAngleLimit;
+    //     }
+
+    //     return false;
+    // }
+
 
     #endregion
     
@@ -194,6 +238,11 @@ public abstract class CharacterParent : MonoBehaviour
             float checkRadiusWall = gizmoCol.bounds.extents.x * colWallSize;
             Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(checkPosWall, checkRadiusWall);
+
+            // Slope Ray Gizmo
+            Vector2 slopeRayOrigin = new Vector2(gizmoCol.bounds.center.x, gizmoCol.bounds.min.y);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(slopeRayOrigin, slopeRayOrigin + Vector2.down * colSlopeRayDist);
         }
     }
 
