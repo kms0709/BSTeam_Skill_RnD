@@ -1,7 +1,5 @@
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.XR;
 
 [CustomEditor(typeof(CameraFreezeZoneManager))]
 public class CameraFreezeZoneManagerEditor : Editor
@@ -60,7 +58,6 @@ public class CameraFreezeZoneManagerEditor : Editor
                 {
                     end = true;
                 }
-
             }
 
             // 박스 구역 닫기
@@ -110,6 +107,11 @@ public class CameraFreezeZoneManagerEditor : Editor
 
         // 부모 오브젝트 설정
         zone.transform.SetParent(manager.transform);
+
+        GameObject cameraBoundary = new GameObject("CameraBoundary");
+        var col = cameraBoundary.AddComponent<EdgeCollider2D>();
+        cameraBoundary.transform.SetParent(zone.transform);
+
 
         FreezeZoneData zoneData = new FreezeZoneData
         {

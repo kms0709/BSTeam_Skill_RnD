@@ -144,6 +144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCam: {fileID: 0}
   subCamBrain: {fileID: 3452047800510324071}
+  outLine: {fileID: 0}
   freezeVCam: {fileID: 0}
   activePriority: 30
   inactivePriority: 0
