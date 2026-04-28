@@ -9,7 +9,7 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private CinemachineBrain subCamBrain;
 
     // 카메라 고정할 때만 사용 필요
-    //[SerializeField] private Image outLine;
+    [SerializeField] private Image outLine;
 
     [Header("고정용 카메라 설정")]
     [SerializeField] private CinemachineCamera freezeVCam; // 고정 전용 VCam
@@ -89,7 +89,7 @@ public class CameraFollow : MonoBehaviour
         targetUISize = new Vector2(uiW, uiH);
 
         // 카메라 고정할 때만 사용 필요
-        //outLine.rectTransform.sizeDelta = new Vector2(uiW + 25, uiH + 25);
+        outLine.rectTransform.sizeDelta = new Vector2(uiW + 30, uiH + 30);
 
         // 2. UI 위치 계산: 플레이어의 월드 위치 -> 메인 카메라의 뷰포트 좌표 -> 캔버스 좌표
         // 동결 모드일 때는 방의 중앙을 기준으로, 팔로우 모드일 때는 플레이어를 기준으로 UI 위치를 잡습니다.
@@ -144,6 +144,8 @@ public class CameraFollow : MonoBehaviour
         // 0. 여기서 카메라 smooth를 줘서 위치를 즉시 설정이 아닌 부드럽게 이동하게 설정
         // ApplySmoothTransitions();
 
+        outLine.gameObject.SetActive(true);
+
         // 1. 고정 카메라의 위치와 렌즈 크기를 즉시 설정
         freezeVCam.transform.position = new Vector3(pos.x, pos.y, -10);
         //freezeVCam.ForceCameraPosition(new Vector3(pos.x, pos.y, -10), Quaternion.identity); // 위치 강제 고정
@@ -157,7 +159,7 @@ public class CameraFollow : MonoBehaviour
     public void UnfreezeCamera()
     {
         if (!isFrozen || freezeVCam == null) return;
-
+        outLine.gameObject.SetActive(false);
         // 우선순위를 낮춰서 다시 원래의 Follow 카메라로 돌아가게 만듦
         freezeVCam.Priority = inactivePriority;
         isFrozen = false;

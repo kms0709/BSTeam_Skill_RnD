@@ -54,40 +54,71 @@ public class CameraFreezeZoneManager : MonoBehaviour
             // todo : 오브젝트 이름 하드 코딩 방식 교체 필요
             Transform stop = zone.rootObject.transform.Find("stopPoint");
             Transform move = zone.rootObject.transform.Find("movePoint");
+            Transform boundary = zone.rootObject.transform.Find("CameraBoundary");
 
             // Stop 적용
             if (stop != null)
             {
-                var col = stop.GetComponent<BoxCollider2D>();
-
-                stop.localPosition = zone.stopData.pointPosition;
-
-                if (col != null)
-                {
-                    col.size = zone.stopData.pointSize; // 트리거 사이즈 설정
-                    col.offset = Vector2.zero;
-                }
-
-                // 카메라 값도 여기서 넘겨줘도 됨
                 var trigger = stop.GetComponent<CameraFreezeZoneTrigger>();
                 if (trigger != null)
                 {
                     trigger.cameraZonePosition = zone.stopData.cameraPosition;// 고정 카메라 위치 설정
                     trigger.cameraZoneSize = zone.stopData.cameraSize;        // 고정 카메라 사이즈 설정
                 }
+
+                if (boundary != null)
+                {
+                    trigger.cameraBoundary = boundary.gameObject;
+
+                    // 기본적으로 벽은 꺼둡니다 (플레이어가 진입할 때만 켜짐)
+                    boundary.gameObject.SetActive(false);
+                    Debug.Log("벽 설정 완료");
+                }
+                stop.localPosition = zone.stopData.pointPosition;
             }
 
             // Move 적용
             if (move != null)
             {
-                var col = move.GetComponent<BoxCollider2D>();
+                var trigger = move.GetComponent<CameraUnFreezeZoneTrigger>();
+
+                if (boundary != null)
+                {
+                    trigger.cameraBoundary = boundary.gameObject;
+
+                    // 기본적으로 벽은 꺼둡니다 (플레이어가 진입할 때만 켜짐)
+                    Debug.Log("비활성화 벽 설정 완료");
+                }
 
                 move.localPosition = zone.moveData.position; // 해제 트리거 위치 설정
+            }
+            
 
-                if (col != null)
+
+            if (boundary != null)
+            {
+                // 1. 경계 오브젝트의 위치를 카메라 고정 위치와 일치시킴
+                boundary.position = zone.stopData.cameraPosition;
+
+                var edgeCol = boundary.GetComponent<EdgeCollider2D>();
+                if (edgeCol != null)
                 {
-                    col.size = zone.moveData.size; // 해제 트리거 사이즈 설정
-                    col.offset = Vector2.zero;
+                    // 2. 카메라 절반 높이(halfHeight)와 절반 너비(halfWidth) 계산
+                    float halfHeight = zone.stopData.cameraSize;
+                    float halfWidth = halfHeight * Camera.main.aspect;
+
+                    // 3. 네 꼭짓점 정의 (로컬 좌표계 기준)
+                    // 시계 방향 혹은 반시계 방향으로 순서대로 연결해야 합니다.
+                    Vector2[] points = new Vector2[5];
+
+                    points[0] = new Vector2(-halfWidth, -halfHeight); // 좌측 하단
+                    points[1] = new Vector2(-halfWidth, halfHeight);  // 좌측 상단
+                    points[2] = new Vector2(halfWidth, halfHeight);   // 우측 상단
+                    points[3] = new Vector2(halfWidth, -halfHeight);  // 우측 하단
+                    points[4] = points[0];                            // 다시 좌측 하단 (폐쇄 루프)
+
+                    // 4. 엣지 콜라이더에 점 할당
+                    edgeCol.points = points;
                 }
             }
         }
